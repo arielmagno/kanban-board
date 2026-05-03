@@ -1,0 +1,59 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  tenantId     String   @unique @default(uuid())
+  boards       Board[]
+  createdAt    DateTime @default(now())
+}
+
+model Board {
+  id        String   @id @default(uuid())
+  title     String
+  tenantId  String
+  ownerId   String
+  owner     User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  lanes     Lane[]
+  createdAt DateTime @default(now())
+
+  @@index([tenantId])
+}
+
+model Lane {
+  id        String   @id @default(uuid())
+  title     String
+  position  Int
+  isDefault Boolean  @default(false)
+  boardId   String
+  board     Board    @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  cards     Card[]
+  tenantId  String
+  createdAt DateTime @default(now())
+
+  @@index([boardId])
+  @@index([tenantId])
+}
+
+model Card {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  position    Int
+  laneId      String
+  lane        Lane     @relation(fields: [laneId], references: [id], onDelete: Cascade)
+  tenantId    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([laneId])
+  @@index([tenantId])
+}

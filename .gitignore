@@ -1,0 +1,70 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+.yarn/
+
+# Build outputs
+dist/
+.next/
+out/
+build/
+*.tsbuildinfo
+
+# Prisma generated client (re-generated on install)
+# NOTE: do NOT ignore prisma/migrations — they must be committed
+apps/api/node_modules/.prisma/
+
+# Environment files — never commit secrets
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+pnpm-debug.log*
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V8
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*.suo
+.project
+.classpath
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# Turbo
+.turbo/
+
+# Next.js
+.next/
+next-env.d.ts
+
+# Vercel
+.vercel/
+
+# Docker
+.dockerignore
+
+# Misc
+*.pem
+.cache/
+tmp/
+temp/

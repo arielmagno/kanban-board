@@ -955,13 +955,16 @@ Images embedded in Markdown are stored as base64 data URIs inline. Max image siz
 
 ## Milestones
 
-### Milestone 1 — Foundation (45 min)
-- Initialize monorepo with `pnpm workspaces`
-- Scaffold `apps/api` (Express + Prisma + TypeScript)
-- Scaffold `apps/web` (Next.js 14 + Tailwind + shadcn/ui)
-- Create `packages/shared` with Zod schemas
-- Write Prisma schema, run first migration
-- Set up Docker Compose with `db` + `api` + `web`
+### Milestone 1 — Foundation ✅ COMPLETE
+- Initialized npm workspaces monorepo (`apps/api`, `apps/web`, `packages/shared`)
+- `packages/shared`: Zod schemas for auth, board, lane, card — exported types inferred from schemas
+- `apps/api`: Express + Prisma + TypeScript scaffolded with error types, auth/validate/error middleware, singleton Prisma client
+- `apps/web`: Next.js 16 App Router + Tailwind v4 + Inter font + design token CSS variables
+- `apps/web/src/lib/api.ts`: Axios client with access token memory storage + auto-refresh interceptor + 401→redirect
+- `apps/web/src/lib/query-client.tsx`: React Query provider
+- Prisma schema with `User`, `Board`, `Lane` (with `isDefault`), `Card` models + initial migration SQL
+- Docker Compose: `db`, `api`, `web` services + `db-test` and `test` with `--profile test`
+- `.env.example`, `.gitignore`, both Dockerfiles
 
 ### Milestone 2 — Auth (45 min)
 - Backend: register/login/refresh endpoints, bcrypt, JWT, Zod validation
