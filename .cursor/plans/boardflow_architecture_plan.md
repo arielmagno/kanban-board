@@ -975,15 +975,25 @@ Images embedded in Markdown are stored as base64 data URIs inline. Max image siz
 - Frontend: `/login` and `/register` pages with branded auth layout; root `/` redirects to `/login`
 - Auth test suite: 15 tests covering bcrypt storage, 409 duplicate, 400 validation, 401 wrong creds, user enumeration prevention, httpOnly cookie, expired/malformed/wrong-secret tokens
 
-### Milestone 3 — Board + Lane CRUD (60 min)
-- Backend: Board + Lane controllers/services with tenantId scoping
-- Frontend: Board list page, create board flow, Lane columns rendered
-- React Query hooks: `useBoard`, `useCreateBoard`, `useCreateLane`
+### Milestone 3 — Board + Lane CRUD ✅ COMPLETE
+- Backend: Board service with `listBoards`, `getBoard`, `createBoard` (auto-seeds 3 default lanes in a transaction), `updateBoard`, `deleteBoard` — all scoped by `tenantId`
+- Backend: Lane service with `createLane`, `updateLane`, `deleteLane` (403 on default lanes), `reorderLanes` (bulk position update in transaction)
+- Routes: `GET/POST /api/boards`, `GET/PATCH/DELETE /api/boards/:id`, `POST /api/boards/:boardId/lanes`, `PATCH /api/boards/:boardId/lanes/reorder`, `PATCH/DELETE /api/lanes/:id`
+- Frontend: `board.types.ts`, `board.api.ts`, React Query hooks (`useBoards`, `useBoard`, `useCreateBoard`, `useUpdateBoard`, `useDeleteBoard`, `useCreateLane`, `useUpdateLane`, `useDeleteLane`, `useReorderLanes`)
+- Frontend: `AppSidebar` (fixed, icon-only, green — matches reference design), `BoardList` with grid + empty state + skeleton, `CreateBoardModal`, `LaneColumn` with pastel colors + rename/delete menu, `BoardClient` + `BoardHeader`
+- App layout at `/boards` with sidebar; board detail at `/boards/[id]`
+- Board test suite: 16 tests covering tenant isolation, cascade delete, default lane protection, whitespace title validation
 
-### Milestone 4 — Card CRUD + Drag & Drop (90 min)
-- Backend: Card CRUD + `move` endpoint (handles position + lane change)
-- Frontend: CardItem component, CardModal (create/edit), dnd-kit integration
-- Optimistic updates: Zustand snapshot → rollback on error
+### Milestone 4 — Card CRUD + Drag & Drop ✅ COMPLETE
+- Backend: Card service — `createCard` (appends at max position + 1), `updateCard`, `deleteCard`, `moveCard` (same-lane reorder + cross-lane move via Prisma transaction, verifies target lane is in same board — 403 otherwise)
+- Routes: `POST /api/lanes/:laneId/cards`, `PATCH/DELETE /api/cards/:id`, `PATCH /api/cards/move`
+- Frontend: `board.store.ts` (Zustand) — `moveCard` optimistic update, `snapshot()`, `rollback(snap)`
+- Frontend: `card.api.ts`, `use-card.ts` hooks (`useCreateCard`, `useUpdateCard`, `useDeleteCard`, `useMoveCard` with rollback on error)
+- Frontend: `CardItem` (dnd-kit `useSortable`, hover edit/delete buttons, drag lift animation)
+- Frontend: `CardModal` (create + edit, client-side Zod validation, slide-up animation)
+- Frontend: `BoardClient` — full `DndContext` with `PointerSensor` + `TouchSensor`, `DragOverlay`, optimistic state → server mutation → rollback pattern
+- Frontend: `LaneColumn` updated with `SortableContext` + `useDroppable`, lane-over highlight ring
+- Card test suite: 15 tests — position ordering, no duplicate positions, cross-board move 403, cross-tenant 403, negative/float position 400, non-UUID 400
 
 ### Milestone 5 — Polish + Docker (45 min)
 - Implement full design system: pastel lane colors, card anatomy (priority pill, progress bar, meta row), sidebar with icon nav

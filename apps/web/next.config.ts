@@ -1,15 +1,7 @@
 import type { NextConfig } from 'next';
-import path from 'path';
 
 const nextConfig: NextConfig = {
-  turbopack: {
-    resolveAlias: {
-      '@boardflow/shared': path.resolve(
-        __dirname,
-        '../../packages/shared/src/index.ts',
-      ),
-    },
-  },
+  transpilePackages: ['@boardflow/shared'],
 };
 
 export default nextConfig;
