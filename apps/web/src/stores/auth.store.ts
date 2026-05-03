@@ -4,6 +4,7 @@ import { setAccessToken } from '@/lib/api';
 interface AuthUser {
   id: string;
   email: string;
+  fullName: string | null;
 }
 
 interface AuthState {

@@ -19,7 +19,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     attempted.current = true;
 
     apiClient
-      .post<{ accessToken: string; user: { id: string; email: string } }>('/api/auth/refresh')
+      .post<{ accessToken: string; user: { id: string; email: string; fullName: string | null } }>('/api/auth/refresh')
       .then(({ data }) => setAuth(data.user, data.accessToken))
       .catch(() => {
         // No valid refresh cookie — user must log in

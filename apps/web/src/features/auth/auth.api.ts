@@ -3,7 +3,7 @@ import type { RegisterDto, LoginDto } from '@boardflow/shared';
 
 interface AuthResponse {
   accessToken: string;
-  user: { id: string; email: string };
+  user: { id: string; email: string; fullName: string | null };
 }
 
 export async function registerUser(dto: RegisterDto): Promise<AuthResponse> {

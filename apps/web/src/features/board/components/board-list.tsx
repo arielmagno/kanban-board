@@ -4,6 +4,7 @@ import { useState, useRef } from 'react';
 import Link from 'next/link';
 import { useBoards, useUpdateBoard } from '../hooks/use-board';
 import { CreateBoardModal } from './create-board-modal';
+import { useAuthStore } from '@/stores/auth.store';
 import { LayoutGrid, Plus, Clock, Pencil, Check, X } from 'lucide-react';
 import type { BoardSummary } from '../board.types';
 
@@ -119,13 +120,17 @@ function BoardCard({ board }: { board: BoardSummary }) {
 export function BoardList() {
   const { data: boards, isLoading, isError, refetch } = useBoards();
   const [showCreate, setShowCreate] = useState(false);
+  const user = useAuthStore((s) => s.user);
+  const firstName = user?.fullName?.split(' ')[0] ?? null;
 
   return (
     <div className="flex-1 overflow-y-auto">
       <div className="p-8 max-w-4xl mx-auto">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">My Boards</h1>
+          <h1 className="text-2xl font-bold text-gray-900">
+            {firstName ? `Welcome, ${firstName}! 👋` : 'My Boards'}
+          </h1>
           <p className="text-sm text-gray-500 mt-1">Select a board to get started</p>
         </div>
         <button

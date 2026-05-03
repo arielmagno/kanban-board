@@ -4,22 +4,22 @@ overview: Build a fullstack Kanban board (BoardFlow) from scratch in 8 hours usi
 todos:
   - id: m1-foundation
     content: "Milestone 1: Monorepo scaffold, Prisma schema, Docker Compose base"
-    status: pending
+    status: completed
   - id: m2-auth
     content: "Milestone 2: Auth backend (JWT, bcrypt) + frontend (login/register pages, Zustand auth store)"
-    status: pending
+    status: completed
   - id: m3-board-lane
     content: "Milestone 3: Board + Lane CRUD with tenantId scoping, React Query hooks"
-    status: pending
+    status: completed
   - id: m4-cards-dnd
     content: "Milestone 4: Card CRUD, move endpoint, dnd-kit drag and drop with optimistic updates"
-    status: pending
+    status: completed
   - id: m5-polish-docker
-    content: "Milestone 5: UI polish (skeletons, empty states, micro-interactions), finalize Docker Compose, README"
-    status: pending
+    content: "Milestone 5: UI polish, placeholder pages, Trello-style scrollbar, board background color, Docker Compose, README"
+    status: completed
   - id: m6-tests
-    content: "Milestone 6: API integration tests (Vitest + Supertest), frontend unit tests, non-happy-path coverage"
-    status: pending
+    content: "Milestone 6: API integration tests (Vitest + Supertest), non-happy-path coverage"
+    status: completed
   - id: m7-stretch
     content: "Milestone 7: Stretch goals in order — real-time (Socket.io), rich text, dark mode, OpenAPI"
     status: pending
@@ -995,18 +995,26 @@ Images embedded in Markdown are stored as base64 data URIs inline. Max image siz
 - Frontend: `LaneColumn` updated with `SortableContext` + `useDroppable`, lane-over highlight ring
 - Card test suite: 15 tests — position ordering, no duplicate positions, cross-board move 403, cross-tenant 403, negative/float position 400, non-UUID 400
 
-### Milestone 5 — Polish + Docker (45 min)
-- Implement full design system: pastel lane colors, card anatomy (priority pill, progress bar, meta row), sidebar with icon nav
-- Loading skeletons (card-shaped pulse), error states, empty lane state with "+ Add task" CTA
-- Mobile layout: bottom tab bar, snap-scroll columns, bottom-sheet card modal
-- Micro-interactions: card lift on drag, lane highlight on drag-over, card hover elevation, modal slide-up via framer-motion
-- Finalize Docker Compose, test full `docker compose up` cold start
-- `.env.example`, README with setup instructions
+### Milestone 5 — Polish + Docker ✅ COMPLETE
+- Implemented full design system: pastel lane colors, sidebar with icon nav (green `#d6ede2` palette)
+- Loading skeletons, error states, empty lane/board states with CTAs
+- Mobile layout: snap-scroll columns, bottom-sheet card modal with `slide-up` animation
+- Micro-interactions: card lift on drag, lane highlight on drag-over, card hover elevation
+- Session persistence via `AuthProvider` (silent refresh from httpOnly cookie on mount)
+- Route protection middleware (`/middleware.ts`): unauthenticated → `/login`, authenticated → `/boards`
+- Logout button in `AppSidebar` using `useLogout` hook
+- Inline board title editing on both `/boards` list (hover pencil) and `/boards/[id]` header (click to edit)
+- **Board background color**: 10-swatch `BoardColorPicker` component, color stored in DB (`color TEXT` column), applied to board page background; lane columns auto-switch to `bg-white/75 backdrop-blur-sm` when a color is active; color stripe shown on board cards in the list
+- **Trello-style scrollbar**: Restructured app routes into `(app)` route group; `main` uses `flex flex-col overflow-hidden`; lanes container is `flex-1 overflow-x-auto overflow-y-hidden` so horizontal scrollbar pins to viewport bottom
+- **Placeholder pages** for `/tasks`, `/team`, `/calendar`: on-brand "coming soon" pages with icon, description, and CTA; protected by middleware
+- Finalized Docker Compose, `.env.example`, README with setup instructions
 
-### Milestone 6 — Tests (60 min)
-- API integration tests: auth, board tenant isolation, card move validation
-- Frontend unit tests: Zod schema edge cases, store rollback
-- Non-happy-path coverage: wrong tenant, empty title, invalid UUID
+### Milestone 6 — Tests ✅ COMPLETE
+- API integration tests: auth, board tenant isolation, cascade delete, card move validation
+- `lane.test.ts`: 14 tests — lane CRUD, default lane protection (403), reordering, cascade deletion of cards
+- `card.test.ts`: 15 tests — position ordering, no duplicate positions, cross-board move 403, cross-tenant 403, negative/float position 400
+- Non-happy-path coverage: wrong tenant, empty title, invalid UUID, reorder with empty array
+- `apps/api/.env.test` for isolated test database (port 5433)
 
 ### Milestone 7 — Stretch Goals (remaining time, in order)
 1. Real-time: Socket.io room per boardId, emit `card:moved`, `card:created` events

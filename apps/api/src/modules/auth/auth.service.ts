@@ -25,14 +25,14 @@ export async function register(dto: RegisterDto) {
 
   const passwordHash = await bcrypt.hash(dto.password, 12);
   const user = await prisma.user.create({
-    data: { email: dto.email, passwordHash },
-    select: { id: true, email: true, tenantId: true },
+    data: { email: dto.email, fullName: dto.fullName, passwordHash },
+    select: { id: true, email: true, fullName: true, tenantId: true },
   });
 
   return {
     accessToken: signAccess(user.id, user.tenantId),
     refreshToken: signRefresh(user.id, user.tenantId),
-    user: { id: user.id, email: user.email },
+    user: { id: user.id, email: user.email, fullName: user.fullName },
   };
 }
 
@@ -46,7 +46,7 @@ export async function login(dto: LoginDto) {
   return {
     accessToken: signAccess(user.id, user.tenantId),
     refreshToken: signRefresh(user.id, user.tenantId),
-    user: { id: user.id, email: user.email },
+    user: { id: user.id, email: user.email, fullName: user.fullName },
   };
 }
 
@@ -60,13 +60,13 @@ export async function refresh(token: string) {
 
   const user = await prisma.user.findUnique({
     where: { id: payload.userId },
-    select: { id: true, email: true, tenantId: true },
+    select: { id: true, email: true, fullName: true, tenantId: true },
   });
   if (!user) throw new UnauthorizedError('User not found');
 
   return {
     accessToken: signAccess(user.id, user.tenantId),
     refreshToken: signRefresh(user.id, user.tenantId),
-    user: { id: user.id, email: user.email },
+    user: { id: user.id, email: user.email, fullName: user.fullName },
   };
 }
