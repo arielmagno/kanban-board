@@ -1,13 +1,16 @@
 FROM node:20-alpine AS base
 WORKDIR /app
 
-# Copy workspace manifests
-COPY package.json ./
+# Prisma's migration engine requires OpenSSL on Alpine
+RUN apk add --no-cache openssl
+
+# Copy workspace manifests + lock file for reproducible installs
+COPY package.json package-lock.json ./
 COPY packages/shared/package.json ./packages/shared/
 COPY apps/api/package.json ./apps/api/
 
-# Install all dependencies
-RUN npm install --workspaces --include-workspace-root
+# Install all dependencies — skip postinstall (shared source not yet present)
+RUN npm ci --workspaces --include-workspace-root --ignore-scripts
 
 # Copy source
 COPY packages/shared ./packages/shared
