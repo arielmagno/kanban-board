@@ -161,6 +161,13 @@ All endpoints (except `/api/auth/*`) require `Authorization: Bearer <accessToken
 - **Lanes**: Default three lanes on create; lanes are reorderable (horizontal drag); each lane keeps a stable accent color when moved (stored `lane.color` + CSS tokens).
 
 ---
+## Screenshot Demos 
+
+<img width="1502" height="822" alt="image" src="https://github.com/user-attachments/assets/d413ee9a-86ee-40d0-a213-a8b490f90cb6" />
+<img width="1493" height="508" alt="image" src="https://github.com/user-attachments/assets/976db5cb-3808-4436-b955-7bcb9861051c" />
+
+
+---
 
 ## Exercise scope & transparency
 
