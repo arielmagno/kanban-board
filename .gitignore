@@ -60,9 +60,6 @@ next-env.d.ts
 # Vercel
 .vercel/
 
-# Docker
-.dockerignore
-
 # Misc
 *.pem
 .cache/

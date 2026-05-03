@@ -1,0 +1,35 @@
+# Dependencies
+node_modules
+**/node_modules
+
+# Build outputs
+dist
+**/dist
+.next
+**/.next
+build
+**/build
+
+# Test artifacts
+coverage
+**/coverage
+
+# Logs
+*.log
+**/npm-debug.log*
+
+# Environment files (secrets must not be baked into the image)
+.env
+**/.env
+!.env.example
+!**/.env.example
+!**/.env.test
+
+# OS / editor noise
+.DS_Store
+.idea
+.vscode
+
+# Git
+.git
+.gitignore

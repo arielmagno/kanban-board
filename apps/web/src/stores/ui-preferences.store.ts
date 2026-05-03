@@ -1,7 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 
-export type ThemePreference = 'light' | 'dark' | 'system';
 export type AnimationSpeed = 'slow' | 'normal' | 'fast';
 export type CardSize = 'compact' | 'comfortable' | 'spacious';
 export type BoardDensity = 'compact' | 'comfortable' | 'spacious';
@@ -64,11 +63,9 @@ const CARD_VARS: Record<CardSize, { py: string; px: string; title: string; desc:
 };
 
 export interface UiPreferencesState {
-  theme: ThemePreference;
   animationSpeed: AnimationSpeed;
   cardSize: CardSize;
   boardDensity: BoardDensity;
-  setTheme: (theme: ThemePreference) => void;
   setAnimationSpeed: (speed: AnimationSpeed) => void;
   setCardSize: (size: CardSize) => void;
   setBoardDensity: (density: BoardDensity) => void;
@@ -97,30 +94,20 @@ export function applyUiPreferenceVars(
   root.style.setProperty('--bf-card-desc-size', c.desc);
 }
 
-export function resolveThemeClass(theme: ThemePreference): 'light' | 'dark' {
-  if (theme === 'dark') return 'dark';
-  if (theme === 'light') return 'light';
-  if (typeof window === 'undefined') return 'light';
-  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-}
-
 export const useUiPreferencesStore = create<UiPreferencesState>()(
   persist(
     (set) => ({
-      theme: 'system',
       animationSpeed: 'normal',
       cardSize: 'comfortable',
       boardDensity: 'comfortable',
-      setTheme: (theme) => set({ theme }),
       setAnimationSpeed: (animationSpeed) => set({ animationSpeed }),
       setCardSize: (cardSize) => set({ cardSize }),
       setBoardDensity: (boardDensity) => set({ boardDensity }),
     }),
     {
-      name: 'boardflow-ui-preferences',
+      name: 'boardflow-ui-prefs',
       storage: createJSONStorage(() => localStorage),
       partialize: (s) => ({
-        theme: s.theme,
         animationSpeed: s.animationSpeed,
         cardSize: s.cardSize,
         boardDensity: s.boardDensity,

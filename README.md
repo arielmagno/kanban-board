@@ -12,7 +12,7 @@ A fullstack Kanban board application built with Next.js, Express, PostgreSQL, an
 | Auth      | JWT (access + refresh tokens), httpOnly cookies  |
 | Real-time | Socket.io (board + board-list live updates)      |
 | Rich text | `@uiw/react-md-editor` (Markdown descriptions + previews) |
-| UX prefs  | Zustand + `localStorage` (theme, motion speed, card size, board density) |
+| UX prefs  | Zustand + `localStorage` (motion speed, card size, board density) |
 | Testing   | Vitest + Supertest (API integration tests)       |
 | Container | Docker + Docker Compose                          |
 
@@ -156,7 +156,7 @@ All endpoints (except `/api/auth/*`) require `Authorization: Bearer <accessToken
 - **Auth**: Short-lived (15 min) JWT access tokens; long-lived (7 day) httpOnly `SameSite=Lax` refresh tokens. The Axios client intercepts 401s and silently refreshes.
 - **Real-time**: Socket.io rooms per board (`board:<id>`) and a global `__boards__` room. Events invalidate React Query cache without a full refetch.
 - **Rich text**: Card descriptions are Markdown; editing uses a minimal toolbar; list and detail views render previews. Editor/preview are dynamically imported (`ssr: false`).
-- **Theme & layout**: Light / dark / system theme, configurable transition speed, card padding scale, and lane spacing — persisted locally and applied via CSS variables on `<html>`.
+- **Theme & layout**: Light/dark follows the **OS** (`prefers-color-scheme`). Animation speed, card padding scale, and lane spacing are persisted locally and applied via CSS variables on `<html>`.
 - **Board owner vs visitor**: Only the board owner can rename the board, reorder lanes, and add/edit/delete/move cards. Others get a read-only board UI but still receive **live** updates over Socket.io (view sync).
 - **Lanes**: Default three lanes on create; lanes are reorderable (horizontal drag); each lane keeps a stable accent color when moved (stored `lane.color` + CSS tokens).
 

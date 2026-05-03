@@ -1,15 +1,10 @@
 'use client';
 
 import { useEffect } from 'react';
-import {
-  useUiPreferencesStore,
-  applyUiPreferenceVars,
-  resolveThemeClass,
-} from '@/stores/ui-preferences.store';
+import { useUiPreferencesStore, applyUiPreferenceVars } from '@/stores/ui-preferences.store';
 
-/** Applies theme class and layout CSS variables from the persisted UI store. */
+/** Applies OS color-scheme (prefers-color-scheme) and layout CSS variables. */
 export function UiPreferencesBridge() {
-  const theme = useUiPreferencesStore((s) => s.theme);
   const animationSpeed = useUiPreferencesStore((s) => s.animationSpeed);
   const cardSize = useUiPreferencesStore((s) => s.cardSize);
   const boardDensity = useUiPreferencesStore((s) => s.boardDensity);
@@ -18,20 +13,16 @@ export function UiPreferencesBridge() {
     const root = document.documentElement;
 
     function sync() {
-      const state = useUiPreferencesStore.getState();
-      const resolved = resolveThemeClass(state.theme);
-      root.classList.toggle('dark', resolved === 'dark');
-      applyUiPreferenceVars(root, state);
+      const dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      root.classList.toggle('dark', dark);
+      applyUiPreferenceVars(root, useUiPreferencesStore.getState());
     }
 
     sync();
-
-    if (theme !== 'system') return;
-
     const mq = window.matchMedia('(prefers-color-scheme: dark)');
     mq.addEventListener('change', sync);
     return () => mq.removeEventListener('change', sync);
-  }, [theme, animationSpeed, cardSize, boardDensity]);
+  }, [animationSpeed, cardSize, boardDensity]);
 
   return null;
 }

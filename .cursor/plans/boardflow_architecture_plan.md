@@ -1217,12 +1217,12 @@ Images embedded in Markdown are stored as base64 data URIs inline. Max image siz
 - `card-modal.tsx`: `MDEditor` with a **minimal** command set (bold, strikethrough, blockquote, bullets, image); `preview="edit"`; `markdown-editor.css`; width `max-w-2xl`
 - `card-item.tsx`: `MDPreview` for truncated description; click opens read-only **card detail** modal
 - `card-detail-modal.tsx`: title, created date, author (board owner), full Markdown body — Trello-style detail view
-- `useResolvedColorScheme()` + `data-color-mode` so previews respect light/dark/system
+- `useResolvedColorScheme()` + `data-color-mode` so previews track the **OS** light/dark preference
 
 #### 7.4 — Dark Mode & Settings Panel ✅ COMPLETE
-- `stores/ui-preferences.store.ts`: Zustand `persist` → `localStorage` (`theme`, `animationSpeed`, `cardSize`, `boardDensity`)
-- `components/ui-preferences-bridge.tsx`: applies `dark` class on `<html>`, listens to system preference when `theme === 'system'`, sets `--bf-*` CSS variables (motion duration, lane width, board gaps/padding, card padding/title size)
-- `components/settings-panel.tsx`: slide-up (mobile) / right drawer (`md+`); `AppSidebar` gear opens it
+- `stores/ui-preferences.store.ts`: Zustand `persist` → `localStorage` (`animationSpeed`, `cardSize`, `boardDensity` only; storage key `boardflow-ui-prefs`)
+- `components/ui-preferences-bridge.tsx`: toggles `dark` on `<html>` from **`prefers-color-scheme` only**; sets `--bf-*` CSS variables (motion, lane width, gaps, card padding)
+- `components/settings-panel.tsx`: sidebar-colored drawer; **no** manual theme toggle — layout prefs only
 - `globals.css`: `@custom-variant dark`, semantic `--color-bf-*` tokens, dark scrollbar + lane token overrides
 
 #### 7.5 — Board UX, DnD & Multi-User Polish ✅ COMPLETE
