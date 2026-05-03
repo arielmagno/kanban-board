@@ -22,16 +22,6 @@ import { CardModal } from './card-modal';
 import { Plus, AlertCircle } from 'lucide-react';
 import type { Card } from '../board.types';
 
-function BoardSkeleton() {
-  return (
-    <div className="flex gap-4 p-6 overflow-x-auto">
-      {Array.from({ length: 3 }).map((_, i) => (
-        <div key={i} className="min-w-[300px] w-[300px] rounded-2xl bg-gray-100 animate-pulse h-64" />
-      ))}
-    </div>
-  );
-}
-
 export function BoardClient({ boardId }: { boardId: string }) {
   const { data: serverBoard, isLoading, isError, refetch } = useBoard(boardId);
   const { board, setBoard, moveCard: moveCardOptimistic } = useBoardStore();
@@ -100,9 +90,17 @@ export function BoardClient({ boardId }: { boardId: string }) {
     createLane.mutate({ title }, { onSuccess: () => { setNewLaneTitle(''); setAddingLane(false); } });
   }
 
-  if (isLoading) return <BoardSkeleton />;
+  if (isLoading) return (
+    <div className="flex-1 overflow-x-auto">
+      <div className="flex gap-4 p-6 h-full items-start">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div key={i} className="min-w-[300px] w-[300px] rounded-2xl bg-black/5 animate-pulse h-64 flex-shrink-0" />
+        ))}
+      </div>
+    </div>
+  );
   if (isError) return (
-    <div className="flex flex-col items-center justify-center h-64 gap-3">
+    <div className="flex-1 flex flex-col items-center justify-center gap-3">
       <AlertCircle size={32} className="text-gray-300" />
       <p className="text-gray-500">Failed to load board.</p>
       <button onClick={() => refetch()} className="text-sm text-[#4a9e7f] hover:underline">Try again</button>
@@ -111,9 +109,10 @@ export function BoardClient({ boardId }: { boardId: string }) {
 
   const displayBoard = board ?? serverBoard;
   if (!displayBoard) return null;
+  const boardColor = displayBoard.color;
 
   return (
-    <>
+    <div className="flex-1 flex flex-col overflow-hidden">
       <DndContext
         sensors={sensors}
         collisionDetection={closestCorners}
@@ -121,50 +120,53 @@ export function BoardClient({ boardId }: { boardId: string }) {
         onDragOver={onDragOver}
         onDragEnd={onDragEnd}
       >
-        <div className="flex gap-4 p-6 overflow-x-auto snap-x snap-mandatory pb-8">
-          {displayBoard.lanes.map((lane, index) => (
-            <div key={lane.id} className="snap-start flex-shrink-0">
+        {/* Trello-style: lanes fill full height, horizontal scrollbar sits at viewport bottom */}
+        <div className="flex-1 overflow-x-auto overflow-y-hidden">
+          <div className="flex gap-4 px-6 py-4 h-full items-start min-w-max">
+            {displayBoard.lanes.map((lane, index) => (
               <LaneColumn
+                key={lane.id}
                 lane={lane}
                 index={index}
                 boardId={boardId}
+                boardColor={boardColor}
                 isOver={overLaneId === lane.id}
                 onAddCard={(laneId) => { setModalLaneId(laneId); setEditCard(null); }}
                 onEditCard={(card) => { setEditCard(card); setModalLaneId(card.laneId); }}
               />
-            </div>
-          ))}
+            ))}
 
-          {addingLane ? (
-            <form onSubmit={handleAddLane} className="snap-start flex-shrink-0 min-w-[300px] w-[300px]">
-              <div className="bg-white rounded-2xl border border-gray-200 p-3">
-                <input
-                  autoFocus
-                  value={newLaneTitle}
-                  onChange={(e) => setNewLaneTitle(e.target.value)}
-                  placeholder="Lane name"
-                  className="w-full px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#4a9e7f] mb-2"
-                />
-                <div className="flex gap-2">
-                  <button type="submit" disabled={createLane.isPending}
-                    className="flex-1 py-1.5 rounded-lg bg-[#f5c842] text-gray-900 text-sm font-semibold hover:bg-[#f0ba1a] transition disabled:opacity-60">
-                    Add lane
-                  </button>
-                  <button type="button" onClick={() => setAddingLane(false)}
-                    className="px-3 py-1.5 rounded-lg text-sm text-gray-500 hover:bg-gray-100 transition">
-                    Cancel
-                  </button>
+            {addingLane ? (
+              <form onSubmit={handleAddLane} className="flex-shrink-0 min-w-[300px] w-[300px]">
+                <div className="bg-white rounded-2xl border border-gray-200 p-3 shadow-sm">
+                  <input
+                    autoFocus
+                    value={newLaneTitle}
+                    onChange={(e) => setNewLaneTitle(e.target.value)}
+                    placeholder="Lane name"
+                    className="w-full px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#4a9e7f] mb-2"
+                  />
+                  <div className="flex gap-2">
+                    <button type="submit" disabled={createLane.isPending}
+                      className="flex-1 py-1.5 rounded-lg bg-[#f5c842] text-gray-900 text-sm font-semibold hover:bg-[#f0ba1a] transition disabled:opacity-60">
+                      Add lane
+                    </button>
+                    <button type="button" onClick={() => setAddingLane(false)}
+                      className="px-3 py-1.5 rounded-lg text-sm text-gray-500 hover:bg-white/50 transition">
+                      Cancel
+                    </button>
+                  </div>
                 </div>
-              </div>
-            </form>
-          ) : (
-            <button
-              onClick={() => setAddingLane(true)}
-              className="snap-start flex-shrink-0 flex items-center gap-2 min-w-[200px] h-12 px-4 rounded-2xl border-2 border-dashed border-gray-300 text-gray-400 text-sm hover:border-[#4a9e7f] hover:text-[#4a9e7f] transition self-start"
-            >
-              <Plus size={16} /> Add lane
-            </button>
-          )}
+              </form>
+            ) : (
+              <button
+                onClick={() => setAddingLane(true)}
+                className="flex-shrink-0 flex items-center gap-2 min-w-[220px] h-12 px-4 rounded-2xl border-2 border-dashed border-black/15 text-black/40 text-sm hover:border-black/30 hover:text-black/60 transition self-start"
+              >
+                <Plus size={16} /> Add lane
+              </button>
+            )}
+          </div>
         </div>
 
         <DragOverlay>
@@ -184,6 +186,6 @@ export function BoardClient({ boardId }: { boardId: string }) {
           onClose={() => { setModalLaneId(null); setEditCard(null); }}
         />
       )}
-    </>
+    </div>
   );
 }

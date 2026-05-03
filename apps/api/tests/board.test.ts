@@ -10,10 +10,10 @@ describe('Board API', () => {
   let user2Token: string;
 
   beforeEach(async () => {
-    await createUser('board@test.com');
-    await createUser('other@test.com');
-    token = await loginAs('board@test.com');
-    user2Token = await loginAs('other@test.com');
+    const userA = await createUser('board@test.com');
+    const userB = await createUser('other@test.com');
+    token = loginAs(userA);
+    user2Token = loginAs(userB);
   });
 
   describe('POST /api/boards', () => {
@@ -135,6 +135,36 @@ describe('Board API', () => {
         .set('Authorization', `Bearer ${user2Token}`);
 
       expect(res.status).toBe(403);
+    });
+
+    it('cascade deletes lanes and cards when board is deleted', async () => {
+      const create = await request(app)
+        .post('/api/boards')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ title: 'Cascade Board' });
+      const boardId: string = create.body.id;
+
+      // Get the first default lane and add a card to it
+      const boardData = await request(app)
+        .get(`/api/boards/${boardId}`)
+        .set('Authorization', `Bearer ${token}`);
+      const laneId: string = boardData.body.lanes[0].id;
+
+      await request(app)
+        .post(`/api/lanes/${laneId}/cards`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({ title: 'Orphan Card' });
+
+      // Delete the board
+      await request(app)
+        .delete(`/api/boards/${boardId}`)
+        .set('Authorization', `Bearer ${token}`);
+
+      // Board should be gone
+      const gone = await request(app)
+        .get(`/api/boards/${boardId}`)
+        .set('Authorization', `Bearer ${token}`);
+      expect(gone.status).toBe(404);
     });
   });
 

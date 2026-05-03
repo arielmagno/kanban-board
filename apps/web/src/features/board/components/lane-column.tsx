@@ -20,13 +20,16 @@ interface LaneColumnProps {
   lane: Lane;
   index: number;
   boardId: string;
+  boardColor?: string | null;
   isOver?: boolean;
   onAddCard: (laneId: string) => void;
   onEditCard: (card: Card) => void;
 }
 
-export function LaneColumn({ lane, index, boardId, isOver, onAddCard, onEditCard }: LaneColumnProps) {
+export function LaneColumn({ lane, index, boardId, boardColor, isOver, onAddCard, onEditCard }: LaneColumnProps) {
   const color = LANE_COLORS[index % LANE_COLORS.length];
+  // When the board has a custom background, use white translucent lanes for contrast
+  const laneBg = boardColor ? 'bg-white/75 backdrop-blur-sm' : color.bg;
   const [menuOpen, setMenuOpen] = useState(false);
   const [renaming, setRenaming] = useState(false);
   const [newTitle, setNewTitle] = useState(lane.title);
@@ -47,8 +50,8 @@ export function LaneColumn({ lane, index, boardId, isOver, onAddCard, onEditCard
 
   return (
     <div
-      className={`flex flex-col rounded-2xl ${color.bg} p-3 min-w-[300px] w-[300px]
-        max-h-[calc(100vh-180px)] transition-all duration-150
+      className={`flex flex-col rounded-2xl ${laneBg} p-3 min-w-[300px] w-[300px]
+        max-h-[calc(100vh-150px)] transition-all duration-150
         ${isOver ? `ring-2 ${color.hover}` : ''}`}
     >
       {/* Header */}

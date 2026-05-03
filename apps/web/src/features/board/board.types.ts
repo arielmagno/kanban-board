@@ -3,6 +3,7 @@ export interface Card {
   title: string;
   description?: string;
   position: number;
+  laneId: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -18,6 +19,7 @@ export interface Lane {
 export interface Board {
   id: string;
   title: string;
+  color?: string | null;
   tenantId: string;
   createdAt: string;
   lanes: Lane[];
@@ -26,5 +28,6 @@ export interface Board {
 export interface BoardSummary {
   id: string;
   title: string;
+  color?: string | null;
   createdAt: string;
 }

@@ -23,10 +23,10 @@ describe('Card API', () => {
   let doneLaneId: string;
 
   beforeEach(async () => {
-    await createUser('card@test.com');
-    await createUser('card2@test.com');
-    token = await loginAs('card@test.com');
-    user2Token = await loginAs('card2@test.com');
+    const userA = await createUser('card@test.com');
+    const userB = await createUser('card2@test.com');
+    token = loginAs(userA);
+    user2Token = loginAs(userB);
     const board = await setupBoard(token);
     boardId = board.id;
     laneId = await getLaneId(token, boardId, 'To Do');

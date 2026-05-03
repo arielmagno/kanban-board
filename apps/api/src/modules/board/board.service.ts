@@ -6,6 +6,7 @@ import { randomUUID } from 'crypto';
 const BOARD_SELECT = {
   id: true,
   title: true,
+  color: true,
   tenantId: true,
   createdAt: true,
   lanes: {
@@ -20,6 +21,7 @@ const BOARD_SELECT = {
           title: true,
           description: true,
           position: true,
+          laneId: true,
           createdAt: true,
           updatedAt: true,
         },
@@ -33,7 +35,7 @@ const BOARD_SELECT = {
 export async function listBoards(tenantId: string) {
   return prisma.board.findMany({
     where: { tenantId },
-    select: { id: true, title: true, createdAt: true },
+    select: { id: true, title: true, color: true, createdAt: true },
     orderBy: { createdAt: 'desc' },
     take: 100,
   });
@@ -54,8 +56,8 @@ export async function createBoard(tenantId: string, ownerId: string, dto: Create
 
   return prisma.$transaction(async (tx) => {
     const board = await tx.board.create({
-      data: { id: boardId, title: dto.title, tenantId, ownerId },
-      select: { id: true, title: true, createdAt: true },
+      data: { id: boardId, title: dto.title, color: dto.color ?? null, tenantId, ownerId },
+      select: { id: true, title: true, color: true, createdAt: true },
     });
 
     await tx.lane.createMany({
@@ -77,8 +79,11 @@ export async function updateBoard(tenantId: string, boardId: string, dto: Update
 
   return prisma.board.update({
     where: { id: boardId },
-    data: { title: dto.title },
-    select: { id: true, title: true, createdAt: true },
+    data: {
+      ...(dto.title && { title: dto.title }),
+      ...(dto.color !== undefined && { color: dto.color }),
+    },
+    select: { id: true, title: true, color: true, createdAt: true },
   });
 }
 

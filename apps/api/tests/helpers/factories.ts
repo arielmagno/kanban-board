@@ -5,15 +5,12 @@ import { prisma } from '../../src/prisma/client';
 export async function createUser(email = 'test@test.com', password = 'password123') {
   const passwordHash = await bcrypt.hash(password, 10);
   return prisma.user.create({
-    data: {
-      email,
-      passwordHash,
-    },
+    data: { email, passwordHash },
+    select: { id: true, email: true, tenantId: true, passwordHash: true },
   });
 }
 
-export async function loginAs(email = 'test@test.com'): Promise<string> {
-  const user = await prisma.user.findUniqueOrThrow({ where: { email } });
+export function loginAs(user: { id: string; tenantId: string }): string {
   return jwt.sign(
     { userId: user.id, tenantId: user.tenantId },
     process.env.JWT_SECRET ?? 'test-jwt-secret',

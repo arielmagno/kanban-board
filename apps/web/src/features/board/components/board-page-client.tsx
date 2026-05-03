@@ -8,7 +8,10 @@ export function BoardPageClient({ boardId }: { boardId: string }) {
   const { data: board } = useBoard(boardId);
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div
+      className="flex-1 flex flex-col overflow-hidden transition-colors duration-300"
+      style={{ background: board?.color ?? undefined }}
+    >
       {board && <BoardHeader board={board} />}
       <BoardClient boardId={boardId} />
     </div>

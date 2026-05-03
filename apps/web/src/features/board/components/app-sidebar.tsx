@@ -2,7 +2,8 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutGrid, CheckSquare, Users, Calendar, Settings } from 'lucide-react';
+import { LayoutGrid, CheckSquare, Users, Calendar, Settings, LogOut } from 'lucide-react';
+import { useLogout } from '@/features/auth/hooks/use-auth';
 
 const NAV_ITEMS = [
   { icon: LayoutGrid, href: '/boards', label: 'Boards' },
@@ -13,6 +14,7 @@ const NAV_ITEMS = [
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const logout = useLogout();
 
   return (
     <aside className="hidden md:flex flex-col items-center w-16 min-h-screen bg-[#d6ede2] py-4 gap-2 fixed left-0 top-0 z-40">
@@ -43,12 +45,20 @@ export function AppSidebar() {
         );
       })}
 
-      <div className="mt-auto">
+      <div className="mt-auto flex flex-col gap-2">
         <button
           title="Settings"
           className="flex items-center justify-center w-10 h-10 rounded-xl text-[#4a9e7f] hover:bg-[#c5e5d5] transition"
         >
           <Settings size={20} />
+        </button>
+        <button
+          title="Log out"
+          onClick={() => logout.mutate()}
+          disabled={logout.isPending}
+          className="flex items-center justify-center w-10 h-10 rounded-xl text-[#4a9e7f] hover:bg-red-100 hover:text-red-500 transition disabled:opacity-50"
+        >
+          <LogOut size={20} />
         </button>
       </div>
     </aside>
