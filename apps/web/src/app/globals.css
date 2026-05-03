@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme inline {
   /* App background */
   --color-app-bg: #f4f6f8;
@@ -7,6 +9,13 @@
   /* Sidebar */
   --color-sidebar-bg: #d6ede2;
   --color-sidebar-active: #f5c842;
+
+  /* Settings / surfaces */
+  --color-bf-surface: #ffffff;
+  --color-bf-surface-muted: #f3f4f6;
+  --color-bf-border: rgb(0 0 0 / 0.1);
+  --color-bf-text: #111827;
+  --color-bf-muted: #6b7280;
 
   /* Lane column backgrounds */
   --color-lane-todo: #fce8ed;
@@ -46,6 +55,38 @@
   --font-sans: 'Inter', sans-serif;
 }
 
+:root {
+  --bf-motion-duration: 150ms;
+  --bf-lane-width: 300px;
+  --bf-board-gap: 1rem;
+  --bf-board-px: 1.5rem;
+  --bf-board-py: 1rem;
+  --bf-lane-pad: 0.75rem;
+  --bf-card-gap: 0.5rem;
+  --bf-card-py: 0.875rem;
+  --bf-card-px: 0.875rem;
+  --bf-card-title-size: 0.875rem;
+  --bf-card-desc-size: 0.75rem;
+}
+
+.dark {
+  --color-app-bg: #0f1218;
+  --color-sidebar-bg: #152922;
+  --color-sidebar-active: #f5c842;
+  --color-bf-surface: #1c2128;
+  --color-bf-surface-muted: #252c35;
+  --color-bf-border: rgb(255 255 255 / 0.12);
+  --color-bf-text: #e6edf3;
+  --color-bf-muted: #8b949e;
+  --color-lane-todo: #2d2226;
+  --color-lane-inprogress: #2c2618;
+  --color-lane-inreview: #1e2a33;
+  --color-lane-done: #262032;
+  --color-card-bg: #1c2128;
+  --color-heading: #e6edf3;
+  --color-muted: #8b949e;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -55,6 +96,7 @@ body {
   color: var(--color-heading);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+  transition: background-color var(--bf-motion-duration) ease, color var(--bf-motion-duration) ease;
 }
 
 /* Scrollbar styling */
@@ -71,6 +113,13 @@ body {
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #a0a0a0;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #484f58;
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #6e7681;
 }
 
 /* Card modal slide-up on mobile */

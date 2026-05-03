@@ -161,17 +161,20 @@ export function BoardClient({
 
   if (isLoading) return (
     <div className="flex-1 overflow-x-auto">
-      <div className="flex gap-4 p-6 h-full items-start">
+      <div className="flex h-full items-start gap-[var(--bf-board-gap)] px-[var(--bf-board-px)] py-[var(--bf-board-py)]">
         {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="min-w-[300px] w-[300px] rounded-2xl bg-black/5 animate-pulse h-64 flex-shrink-0" />
+          <div
+            key={i}
+            className="min-w-[var(--bf-lane-width)] w-[var(--bf-lane-width)] rounded-2xl bg-black/5 dark:bg-white/10 animate-pulse h-64 flex-shrink-0 duration-[var(--bf-motion-duration)]"
+          />
         ))}
       </div>
     </div>
   );
   if (isError) return (
     <div className="flex-1 flex flex-col items-center justify-center gap-3">
-      <AlertCircle size={32} className="text-gray-300" />
-      <p className="text-gray-500">Failed to load board.</p>
+      <AlertCircle size={32} className="text-muted" />
+      <p className="text-muted">Failed to load board.</p>
       <button onClick={() => refetch()} className="text-sm text-[#4a9e7f] hover:underline">Try again</button>
     </div>
   );
@@ -193,7 +196,7 @@ export function BoardClient({
       >
         {/* Trello-style: lanes fill full height, horizontal scrollbar sits at viewport bottom */}
         <div className="flex-1 overflow-x-auto overflow-y-hidden">
-          <div className="flex gap-4 px-6 py-4 h-full items-start min-w-max">
+          <div className="flex gap-[var(--bf-board-gap)] px-[var(--bf-board-px)] py-[var(--bf-board-py)] h-full items-start min-w-max">
             <SortableContext
               items={displayBoard.lanes.map((l) => l.id)}
               strategy={horizontalListSortingStrategy}
@@ -215,14 +218,14 @@ export function BoardClient({
             </SortableContext>
 
             {isOwner && addingLane ? (
-              <form ref={addLaneFormRef} onSubmit={handleAddLane} className="flex-shrink-0 min-w-[300px] w-[300px]">
-                <div className="bg-white rounded-2xl border border-gray-200 p-3 shadow-sm">
+              <form ref={addLaneFormRef} onSubmit={handleAddLane} className="flex-shrink-0 min-w-[var(--bf-lane-width)] w-[var(--bf-lane-width)]">
+                <div className="bg-bf-surface rounded-2xl border border-bf-border p-3 shadow-sm">
                   <input
                     autoFocus
                     value={newLaneTitle}
                     onChange={(e) => setNewLaneTitle(e.target.value)}
                     placeholder="Lane name"
-                    className="w-full px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#4a9e7f] mb-2"
+                    className="w-full px-3 py-2 text-sm border border-bf-border rounded-xl bg-bf-surface text-heading placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-[#4a9e7f] mb-2"
                   />
                   <div className="flex gap-2">
                     <button type="submit" disabled={createLane.isPending}
@@ -230,7 +233,7 @@ export function BoardClient({
                       Add lane
                     </button>
                     <button type="button" onClick={() => setAddingLane(false)}
-                      className="px-3 py-1.5 rounded-lg text-sm text-gray-500 hover:bg-white/50 transition">
+                      className="px-3 py-1.5 rounded-lg text-sm text-bf-muted hover:bg-bf-surface-muted transition duration-[var(--bf-motion-duration)]">
                       Cancel
                     </button>
                   </div>
@@ -239,7 +242,7 @@ export function BoardClient({
             ) : isOwner ? (
               <button
                 onClick={() => setAddingLane(true)}
-                className="flex-shrink-0 flex items-center gap-2 min-w-[220px] h-12 px-4 rounded-2xl border-2 border-dashed border-black/15 text-black/40 text-sm hover:border-black/30 hover:text-black/60 transition self-start"
+                className="flex-shrink-0 flex items-center gap-2 min-w-[220px] h-12 px-4 rounded-2xl border-2 border-dashed border-bf-border text-bf-muted text-sm hover:border-[#4a9e7f]/50 hover:text-heading transition duration-[var(--bf-motion-duration)] self-start"
               >
                 <Plus size={16} /> Add lane
               </button>

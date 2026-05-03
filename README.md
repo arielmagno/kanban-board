@@ -6,12 +6,13 @@ A fullstack Kanban board application built with Next.js, Express, PostgreSQL, an
 
 | Layer     | Tech                                             |
 |-----------|--------------------------------------------------|
-| Frontend  | Next.js 16 (App Router), React 19, Tailwind CSS v4, shadcn/ui, dnd-kit |
+| Frontend  | Next.js 16 (App Router), React 19, Tailwind CSS v4, dnd-kit |
 | Backend   | Express.js, TypeScript, Prisma ORM               |
 | Database  | PostgreSQL 16                                    |
 | Auth      | JWT (access + refresh tokens), httpOnly cookies  |
 | Real-time | Socket.io (board + board-list live updates)      |
-| Rich text | `@uiw/react-md-editor` (card descriptions)       |
+| Rich text | `@uiw/react-md-editor` (Markdown descriptions + previews) |
+| UX prefs  | Zustand + `localStorage` (theme, motion speed, card size, board density) |
 | Testing   | Vitest + Supertest (API integration tests)       |
 | Container | Docker + Docker Compose                          |
 
@@ -135,7 +136,7 @@ All endpoints (except `/api/auth/*`) require `Authorization: Bearer <accessToken
 | GET | `/api/boards` | List boards for authenticated tenant |
 | POST | `/api/boards` | Create a board (auto-creates 3 default lanes) |
 | GET | `/api/boards/:id` | Get board with lanes and cards |
-| PATCH | `/api/boards/:id` | Update board title |
+| PATCH | `/api/boards/:id` | Update board title, background color, and/or visibility |
 | DELETE | `/api/boards/:id` | Delete board (cascades to lanes and cards) |
 | POST | `/api/boards/:id/lanes` | Add a lane to a board |
 | PATCH | `/api/boards/:id/lanes/reorder` | Reorder lanes |
@@ -154,4 +155,30 @@ All endpoints (except `/api/auth/*`) require `Authorization: Bearer <accessToken
 - **Position integrity**: Card/lane reordering uses gap-shifting transactions (no float positions) to ensure no duplicates.
 - **Auth**: Short-lived (15 min) JWT access tokens; long-lived (7 day) httpOnly `SameSite=Lax` refresh tokens. The Axios client intercepts 401s and silently refreshes.
 - **Real-time**: Socket.io rooms per board (`board:<id>`) and a global `__boards__` room. Events invalidate React Query cache without a full refetch.
-- **Rich text**: Card descriptions are stored as Markdown and rendered via `@uiw/react-md-editor`. The editor and preview components are dynamically imported (`ssr: false`) to avoid SSR issues.
+- **Rich text**: Card descriptions are Markdown; editing uses a minimal toolbar; list and detail views render previews. Editor/preview are dynamically imported (`ssr: false`).
+- **Theme & layout**: Light / dark / system theme, configurable transition speed, card padding scale, and lane spacing — persisted locally and applied via CSS variables on `<html>`.
+- **Board owner vs visitor**: Only the board owner can rename the board, reorder lanes, and add/edit/delete/move cards. Others get a read-only board UI but still receive **live** updates over Socket.io (view sync).
+- **Lanes**: Default three lanes on create; lanes are reorderable (horizontal drag); each lane keeps a stable accent color when moved (stored `lane.color` + CSS tokens).
+
+---
+
+## Exercise scope & transparency
+
+This repo is a **coding exercise**: the goal is a credible full-stack Kanban with auth, multi-tenant safety, drag-and-drop, and realtime — not a production SaaS. The notes below document **what we optimized for** and **what we deliberately did not build**.
+
+### Known limitations
+
+- **Auth**: Email/password only — no Google or other IdPs; no MFA, password reset flows, or advanced account security.
+- **Board visibility**: New boards default to **public to all authenticated users** so multiple people can open the same board and see **Socket.io** updates without extra invitation. Non-owners cannot change the board; they only **view** realtime changes.
+- **Realtime**: Sockets **invalidate React Query** so everyone’s UI refreshes; write APIs still enforce **owner-only** mutations. There is no operational-transform or conflict UI.
+- **Markdown**: Practical subset (e.g. bold, lists, quotes, images) — not a full Notion-class editor.
+
+### Nice-to-haves (future ideas)
+
+- **Teams & ACL**: Invite members, per-board roles, private-by-default boards, and fine-grained who can edit.
+- **Card assignees & My Tasks**: Assign cards to users; a real **Tasks** view for “what’s mine.”
+- **Activity**: Per-card and board-level audit log (who moved/edited what, when).
+- **Team & Calendar**: Placeholder routes today — progress dashboards and shared calendars.
+- **Platform**: Full public **REST** surface + **OpenAPI** export; optional **E2E** tests.
+- **Privacy**: **E2E encryption** of card bodies so DB operators cannot read content.
+

@@ -6,6 +6,7 @@ import { X } from 'lucide-react';
 import { useCreateCard, useUpdateCard } from '../hooks/use-card';
 import { createCardSchema } from '@boardflow/shared';
 import type { Card } from '../board.types';
+import { useResolvedColorScheme } from '@/hooks/use-resolved-color-scheme';
 import '@uiw/react-md-editor/markdown-editor.css';
 import {
   bold,
@@ -34,6 +35,7 @@ interface CardModalProps {
 }
 
 export function CardModal({ boardId, laneId, editCard, onClose }: CardModalProps) {
+  const colorMode = useResolvedColorScheme();
   const [title, setTitle] = useState(editCard?.title ?? '');
   const [description, setDescription] = useState(editCard?.description ?? '');
   const [error, setError] = useState('');
@@ -73,12 +75,12 @@ export function CardModal({ boardId, laneId, editCard, onClose }: CardModalProps
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl p-6 animate-slide-up" onMouseDown={(e) => e.stopPropagation()}>
+      <div className="bg-bf-surface rounded-2xl shadow-xl w-full max-w-2xl p-6 animate-slide-up border border-bf-border" onMouseDown={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-base font-bold text-gray-900">
+          <h2 className="text-base font-bold text-heading">
             {editCard ? 'Edit card' : 'Add card'}
           </h2>
-          <button onClick={onClose} className="p-1 rounded-lg hover:bg-gray-100 transition text-gray-400">
+          <button onClick={onClose} className="p-1 rounded-lg hover:bg-bf-surface-muted transition duration-[var(--bf-motion-duration)] text-bf-muted">
             <X size={18} />
           </button>
         </div>
@@ -91,12 +93,12 @@ export function CardModal({ boardId, laneId, editCard, onClose }: CardModalProps
               value={title}
               onChange={(e) => { setTitle(e.target.value); setError(''); }}
               placeholder="Card title"
-              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#4a9e7f] transition"
+              className="w-full px-4 py-2.5 rounded-xl border border-bf-border bg-bf-surface text-heading text-sm font-medium placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-[#4a9e7f] transition duration-[var(--bf-motion-duration)]"
             />
             {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
           </div>
 
-          <div data-color-mode="light" className="rounded-xl border border-gray-200 overflow-hidden [&_.w-md-editor]:shadow-none [&_.w-md-editor]:!rounded-xl [&_.w-md-editor-toolbar]:!py-1.5 [&_.w-md-editor-toolbar]:!px-1 [&_.w-md-editor-toolbar_li_button]:!p-1.5">
+          <div data-color-mode={colorMode} className="rounded-xl border border-bf-border overflow-hidden [&_.w-md-editor]:shadow-none [&_.w-md-editor]:!rounded-xl [&_.w-md-editor-toolbar]:!py-1.5 [&_.w-md-editor-toolbar]:!px-1 [&_.w-md-editor-toolbar_li_button]:!p-1.5">
             <MDEditor
               value={description}
               onChange={(val) => setDescription(val ?? '')}
@@ -112,7 +114,7 @@ export function CardModal({ boardId, laneId, editCard, onClose }: CardModalProps
           </div>
 
           {(createCard.isError || updateCard.isError) && (
-            <p className="text-xs text-rose-500 bg-rose-50 rounded-lg px-3 py-2">
+            <p className="text-xs text-rose-500 bg-rose-50 dark:bg-rose-950/40 dark:text-rose-300 rounded-lg px-3 py-2">
               {(createCard.error || updateCard.error) instanceof Error &&
               (createCard.error || updateCard.error)?.message
                 ? (createCard.error ?? updateCard.error)?.message
@@ -124,7 +126,7 @@ export function CardModal({ boardId, laneId, editCard, onClose }: CardModalProps
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-100 transition"
+              className="px-4 py-2 rounded-xl text-sm font-medium text-bf-text hover:bg-bf-surface-muted transition duration-[var(--bf-motion-duration)]"
             >
               Cancel
             </button>

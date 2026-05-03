@@ -79,11 +79,11 @@ export function BoardHeader({
   }
 
   return (
-    <div className="flex items-center justify-between px-6 py-3 border-b border-black/10 bg-white/70 backdrop-blur-sm sticky top-0 z-20 flex-shrink-0">
+    <div className="flex items-center justify-between px-6 py-3 border-b border-bf-border bg-bf-surface/70 dark:bg-bf-surface/80 backdrop-blur-sm sticky top-0 z-20 flex-shrink-0 transition-colors duration-[var(--bf-motion-duration)]">
       <div className="flex items-center gap-3 min-w-0">
         <Link
           href="/boards"
-          className="p-1.5 rounded-lg text-gray-400 hover:bg-black/10 transition flex-shrink-0"
+          className="p-1.5 rounded-lg text-bf-muted hover:bg-black/10 dark:hover:bg-white/10 transition duration-[var(--bf-motion-duration)] flex-shrink-0"
         >
           <ChevronLeft size={18} />
         </Link>
@@ -96,24 +96,24 @@ export function BoardHeader({
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
               onKeyDown={onKeyDown}
-              className="font-bold text-gray-900 text-base bg-transparent border-b-2 border-[#4a9e7f] focus:outline-none min-w-0 w-48 sm:w-72"
+              className="font-bold text-heading text-base bg-transparent border-b-2 border-[#4a9e7f] focus:outline-none min-w-0 w-48 sm:w-72"
             />
             <button onMouseDown={(e) => { e.preventDefault(); submit(); }}
               className="p-1 rounded-lg text-[#4a9e7f] hover:bg-[#d6ede2] transition flex-shrink-0">
               <Check size={15} />
             </button>
             <button onMouseDown={(e) => { e.preventDefault(); cancel(); }}
-              className="p-1 rounded-lg text-gray-400 hover:bg-black/10 transition flex-shrink-0">
+              className="p-1 rounded-lg text-gray-400 hover:bg-black/10 dark:hover:bg-white/10 transition flex-shrink-0">
               <X size={15} />
             </button>
           </div>
         ) : isOwner ? (
           <button onClick={startEdit} className="group flex items-center gap-1.5 text-left min-w-0" title="Click to rename">
-            <h1 className="font-bold text-gray-900 text-base leading-tight truncate">{board.title}</h1>
-            <Pencil size={13} className="text-gray-300 group-hover:text-gray-500 transition flex-shrink-0" />
+            <h1 className="font-bold text-heading text-base leading-tight truncate">{board.title}</h1>
+            <Pencil size={13} className="text-muted group-hover:text-bf-muted transition flex-shrink-0" />
           </button>
         ) : (
-          <h1 className="font-bold text-gray-900 text-base leading-tight truncate">{board.title}</h1>
+          <h1 className="font-bold text-heading text-base leading-tight truncate">{board.title}</h1>
         )}
       </div>
 
@@ -126,19 +126,19 @@ export function BoardHeader({
               setShowColors((s) => !s);
             }}
             title="Board background color"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm text-gray-600 hover:bg-black/10 transition"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm text-bf-text hover:bg-black/10 dark:hover:bg-white/10 transition duration-[var(--bf-motion-duration)]"
           >
           <Palette size={15} />
           <span className="hidden sm:inline text-xs font-medium">Background</span>
           {board.color && (
-            <span className="w-3 h-3 rounded-full border border-gray-300 ml-0.5 flex-shrink-0"
+            <span className="w-3 h-3 rounded-full border border-bf-border ml-0.5 flex-shrink-0"
               style={{ backgroundColor: board.color }} />
           )}
         </button>
 
         {showColors && (
-          <div className="absolute right-0 top-10 bg-white rounded-2xl shadow-xl border border-gray-100 p-4 w-64 z-30">
-            <p className="text-xs font-semibold text-gray-500 mb-3 uppercase tracking-wide">Board background</p>
+          <div className="absolute right-0 top-10 bg-bf-surface rounded-2xl shadow-xl border border-bf-border p-4 w-64 z-30">
+            <p className="text-xs font-semibold text-bf-muted mb-3 uppercase tracking-wide">Board background</p>
             <BoardColorPicker value={board.color} onChange={(c) => { handleColorChange(c); setShowColors(false); }} />
           </div>
         )}

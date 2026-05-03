@@ -21,8 +21,8 @@ todos:
     content: "Milestone 6: API integration tests (Vitest + Supertest), non-happy-path coverage"
     status: completed
   - id: m7-stretch
-    content: "Milestone 7: Stretch goals — real-time (Socket.io) ✅, board visibility + author ✅, rich text, dark mode, OpenAPI"
-    status: in_progress
+    content: "Milestone 7: Stretch — Socket.io, visibility/owner, rich text, card detail, read-only visitors, lane reorder + colors, settings/dark mode (OpenAPI deferred)"
+    status: completed
 isProject: false
 ---
 
@@ -30,7 +30,7 @@ isProject: false
 
 ## Tech Stack Decisions
 
-- **Frontend**: Next.js 14 App Router (TypeScript, Tailwind CSS, shadcn/ui)
+- **Frontend**: Next.js 16 App Router (TypeScript, Tailwind CSS v4)
 - **State**: Zustand (local/optimistic UI) + React Query (server state)
 - **Drag & Drop**: `dnd-kit` (modern, accessible, works well with React 18)
 - **Backend**: Express.js (standalone API, not Next.js API routes — cleaner separation)
@@ -50,7 +50,7 @@ kanban-board/
 ├── docker-compose.yml
 ├── .env.example
 ├── apps/
-│   ├── web/                         # Next.js 14 App Router frontend
+│   ├── web/                         # Next.js App Router frontend
 │   │   ├── Dockerfile
 │   │   ├── vitest.config.mts        # Vitest config (ESM, jsdom, @boardflow/shared alias)
 │   │   └── src/
@@ -187,6 +187,7 @@ model Lane {
   title     String
   position  Int                         // for ordering
   isDefault Boolean  @default(false)   // default lanes cannot be deleted
+  color     String?                    // UI accent index; persists across reorder
   boardId   String
   board     Board    @relation(fields: [boardId], references: [id], onDelete: Cascade)
   cards     Card[]
@@ -1185,7 +1186,7 @@ Images embedded in Markdown are stored as base64 data URIs inline. Max image siz
 - `register-form.test.tsx`: render, whitespace name blocked, password min-length, duplicate email server error
 - `create-board-modal.test.tsx`: render, valid submit (includes `onSuccess` callback), whitespace title blocked, cancel
 
-### Milestone 7 — Stretch Goals 🚀 IN PROGRESS
+### Milestone 7 — Stretch Goals ✅ COMPLETE (OpenAPI & product roadmap deferred)
 
 #### 7.1 — Real-time Updates ✅ COMPLETE
 - `apps/api/src/socket.ts`: Socket.io singleton, `initSocket(httpServer)`, `emitBoardUpdate(boardId)`, `emitBoardsUpdate()`
@@ -1213,13 +1214,27 @@ Images embedded in Markdown are stored as base64 data URIs inline. Max image siz
 
 #### 7.3 — Rich Text Descriptions ✅ COMPLETE
 - Installed `@uiw/react-md-editor` (dynamically imported with `ssr: false` to avoid SSR issues)
-- `card-modal.tsx`: replaced `<textarea>` with `<MDEditor>` (`preview="edit"`, height 180, `data-color-mode="light"`, imports `markdown-editor.css`)
-- `card-item.tsx`: replaced plain `<p>` description with `<MDPreview>` (`@uiw/react-md-editor`'s `Markdown` sub-component, also dynamically imported)
-- Modal widened from `max-w-md` → `max-w-2xl` to accommodate the editor toolbar
+- `card-modal.tsx`: `MDEditor` with a **minimal** command set (bold, strikethrough, blockquote, bullets, image); `preview="edit"`; `markdown-editor.css`; width `max-w-2xl`
+- `card-item.tsx`: `MDPreview` for truncated description; click opens read-only **card detail** modal
+- `card-detail-modal.tsx`: title, created date, author (board owner), full Markdown body — Trello-style detail view
+- `useResolvedColorScheme()` + `data-color-mode` so previews respect light/dark/system
 
-#### Remaining stretch goals (in order)
-4. Dark mode: Tailwind `dark:` classes + settings panel Zustand store
-5. REST API docs: OpenAPI JSON via `zod-to-openapi`
+#### 7.4 — Dark Mode & Settings Panel ✅ COMPLETE
+- `stores/ui-preferences.store.ts`: Zustand `persist` → `localStorage` (`theme`, `animationSpeed`, `cardSize`, `boardDensity`)
+- `components/ui-preferences-bridge.tsx`: applies `dark` class on `<html>`, listens to system preference when `theme === 'system'`, sets `--bf-*` CSS variables (motion duration, lane width, board gaps/padding, card padding/title size)
+- `components/settings-panel.tsx`: slide-up (mobile) / right drawer (`md+`); `AppSidebar` gear opens it
+- `globals.css`: `@custom-variant dark`, semantic `--color-bf-*` tokens, dark scrollbar + lane token overrides
+
+#### 7.5 — Board UX, DnD & Multi-User Polish ✅ COMPLETE
+- **Non-owner read-only**: `BoardClient` / `LaneColumn` / `CardItem` / `BoardHeader` — no lane reorder, no card drag, no add/edit/delete/rename board; subtle lock affordance on lanes; `DndContext` keeps stable `sensors` array to satisfy React effect rules; handlers gate on `isOwnerRef`
+- **Lane reorder**: horizontal `SortableContext` + `useReorderLanes`; Zustand `reorderLanes` optimistic + rollback pattern consistent with cards
+- **Lane color persistence**: Prisma `Lane.color` (string index); API sets colors on create; UI uses theme CSS variables for tints so reorder does not swap colors
+- **Click-away**: `lib/use-on-click-outside.ts` for modals, rename popovers, lane “more” menu, settings (capture phase)
+- **Stack / docs note**: README states exercise scope, known limits, and future ideas (see repo `README.md`)
+
+#### Deferred / not implemented (optional follow-ups)
+- **OpenAPI**: machine-readable REST spec (`zod-to-openapi` or hand-written) — still a good add-on
+- **Broader product**: teams, assignees, My Tasks, activity log, encrypted card bodies — listed under README *Nice-to-haves*
 
 ---
 
