@@ -1,0 +1,43 @@
+---
+description: API module pattern — controller/service/data layer separation and HTTP codes
+globs: apps/api/**/*.ts
+alwaysApply: false
+---
+
+# API Module Pattern
+
+## Layer responsibilities
+- **Controller**: HTTP only. Parse validated body, call service, return response. No business logic.
+- **Service**: Business logic only. Throws typed errors. Never imports `req`/`res`.
+- **Data access**: Prisma queries only. Always scoped by `tenantId`.
+
+## Error handling
+Throw typed errors in services. Let the centralized error middleware handle HTTP responses.
+
+```typescript
+// ✅ service.ts
+if (!card) throw new NotFoundError('Card not found');
+
+// ✅ controller.ts
+const card = await cardService.getById(tenantId, id);
+res.json(card);
+```
+
+Never catch errors in the controller just to re-throw or log — let middleware handle it.
+
+## HTTP status codes (strict)
+| Scenario | Code |
+|---|---|
+| POST (resource created) | 201 |
+| GET / PATCH | 200 |
+| DELETE | 204 |
+| Validation failure | 400 |
+| No/bad/expired token | 401 |
+| Valid token, wrong tenant | 403 |
+| Resource not found | 404 |
+
+## Route shape
+- Boards: `GET/POST /api/boards`, `GET/PATCH/DELETE /api/boards/:id`
+- Lanes: `POST /api/boards/:boardId/lanes`, `PATCH/DELETE /api/lanes/:id`, `PATCH /api/lanes/reorder`
+- Cards: `POST /api/lanes/:laneId/cards`, `PATCH/DELETE /api/cards/:id`, `PATCH /api/cards/move`
+- Auth: `POST /api/auth/register`, `POST /api/auth/login`, `POST /api/auth/refresh`

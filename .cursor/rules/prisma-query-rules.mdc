@@ -1,0 +1,49 @@
+---
+description: Prisma query conventions — tenantId scoping, explicit select, cascade ownership checks
+globs: apps/api/**/*.ts
+alwaysApply: false
+---
+
+# Prisma Query Rules
+
+## Always scope by tenantId
+
+```typescript
+// ❌ BAD — missing tenant filter, exposes cross-tenant data
+prisma.card.findUnique({ where: { id } })
+
+// ✅ GOOD — findFirst with tenantId ensures ownership
+prisma.card.findFirst({ where: { id, tenantId } })
+```
+
+Never use `findUnique` on an ID alone. Always use `findFirst` with `{ id, tenantId }`.
+
+## Use explicit select — no overfetch
+
+```typescript
+// ❌ BAD — returns all fields including sensitive relations
+prisma.board.findMany({ where: { tenantId } })
+
+// ✅ GOOD
+prisma.board.findMany({
+  where: { tenantId },
+  select: { id: true, title: true, createdAt: true },
+  orderBy: { createdAt: 'desc' },
+  take: 50,
+})
+```
+
+## Cascade ownership checks for nested resources
+Before mutating a Card or Lane, verify its parent Board belongs to the tenant:
+
+```typescript
+// card.data.ts
+const card = await prisma.card.findFirst({
+  where: { id: cardId, tenantId },
+  include: { lane: { include: { board: true } } },
+});
+if (!card) throw new NotFoundError('Card not found');
+```
+
+## Ordering
+Cards and Lanes use integer `position` fields. After a move, use a transaction to update displaced sibling positions. Positions must remain unique per lane.

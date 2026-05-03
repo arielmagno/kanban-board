@@ -1,0 +1,28 @@
+---
+description: BoardFlow project context — monorepo layout, stack, and tenantId mandate
+alwaysApply: true
+---
+
+# BoardFlow Project Context
+
+Monorepo: pnpm workspaces. Three packages:
+- `apps/api` — Express + Prisma (port 4000)
+- `apps/web` — Next.js 14 App Router (port 3000)
+- `packages/shared` — Zod schemas + TypeScript types (imported by both apps)
+
+## Multi-tenancy (CRITICAL)
+- Every DB query MUST include `where: { tenantId }`.
+- `tenantId` comes from `req.user.tenantId` (JWT payload). Never from the request body or params.
+- Cross-tenant access must return 403, not 404 (404 leaks resource existence).
+
+## Module structure
+- `apps/api`: `modules/<domain>/controller.ts` → `service.ts` → Prisma only
+- `apps/web`: `features/<domain>/` containing components, hooks, and api functions
+
+## Validation
+- All Zod schemas live in `packages/shared/schemas/`.
+- Import from `@boardflow/shared`. Never redefine schemas locally.
+- Always use `.trim().min(1)` for required strings — not just `.min(1)`.
+
+## TypeScript
+- No `any`. No implicit types. Use types inferred from Zod schemas via `z.infer<>`.

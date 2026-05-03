@@ -1,0 +1,49 @@
+---
+description: Zod schema conventions — trim before min, UUID IDs, export inferred types
+globs: packages/shared/**/*.ts
+alwaysApply: false
+---
+
+# Zod Schema Rules
+
+## Always trim before min on strings
+```typescript
+// ❌ BAD — passes whitespace-only strings like "   "
+z.string().min(1)
+
+// ✅ GOOD
+z.string().trim().min(1).max(200)
+```
+
+## All ID fields must be validated as UUIDs
+```typescript
+// ❌ BAD
+laneId: z.string()
+
+// ✅ GOOD
+laneId: z.string().uuid()
+```
+
+## Position fields must be non-negative integers
+```typescript
+position: z.number().int().min(0)
+```
+
+## Always export both the schema and the inferred type
+```typescript
+export const createCardSchema = z.object({
+  title: z.string().trim().min(1).max(200),
+  description: z.string().trim().optional(),
+  laneId: z.string().uuid(),
+});
+
+export type CreateCardDto = z.infer<typeof createCardSchema>;
+```
+
+## Schema file per domain
+- `schemas/auth.ts` — register, login, refresh
+- `schemas/board.ts` — createBoard, updateBoard
+- `schemas/lane.ts` — createLane, updateLane, reorderLanes
+- `schemas/card.ts` — createCard, updateCard, moveCard
+
+All schemas are re-exported from `packages/shared/index.ts`.

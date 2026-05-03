@@ -1,0 +1,42 @@
+---
+description: Next.js App Router component rules — server vs client, data fetching, optimistic DnD
+globs: apps/web/**/*.tsx
+alwaysApply: false
+---
+
+# Frontend Component Rules
+
+## Server vs Client components
+Default to server components. Only add `"use client"` when the component uses:
+- `useState`, `useEffect`, event handlers, or browser APIs
+- dnd-kit hooks (`useSortable`, `useDraggable`, `useDroppable`)
+- Zustand stores or React Query hooks
+
+## Data fetching
+- **Server components**: call `lib/api.ts` functions directly (no React Query)
+- **Client components**: use React Query hooks from `features/<domain>/hooks/`
+- Never write `fetch()` inline inside a component — all API calls go through `lib/api.ts`
+
+## Optimistic drag-and-drop pattern
+```typescript
+// 1. Snapshot current state
+const snapshot = useBoardStore.getState().snapshot();
+// 2. Update store immediately
+useBoardStore.getState().moveCard(cardId, fromLaneId, toLaneId, position);
+// 3. Fire mutation
+moveCardMutation.mutate(dto, {
+  onError: () => useBoardStore.getState().rollback(snapshot),
+});
+```
+
+## Required states
+Every data-fetching component must render all three states:
+- **Loading**: `<Skeleton>` from shadcn/ui — match the shape of the real content
+- **Error**: inline message with a retry button
+- **Empty**: explicit empty state with a call-to-action (not a blank screen)
+
+## Naming
+- Page components: `BoardPage`, `LoginPage`
+- Feature client components: `BoardClient`, `CardModal`, `LaneColumn`
+- Hooks: `useBoard`, `useCreateCard`, `useMoveCard`
+- API functions: `fetchBoard`, `createCard`, `moveCard`

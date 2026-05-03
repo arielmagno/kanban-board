@@ -1,0 +1,50 @@
+---
+description: Test conventions — required coverage categories, tenant isolation, no Prisma mocks
+globs: **/*.test.ts, **/*.test.tsx
+alwaysApply: false
+---
+
+# Test Conventions
+
+## Every API test file must cover these categories
+1. Happy path — correct status code and response shape
+2. Cross-tenant access → **403** (not 404)
+3. Unauthenticated / bad token → **401**
+4. Zod boundary failures → **400** (empty string, whitespace-only, too long, invalid UUID)
+
+## Tenant isolation test is mandatory on every resource endpoint
+```typescript
+it('returns 403 for a resource owned by another tenant', async () => {
+  const res = await authedRequest(user2Token).get(`/api/boards/${user1BoardId}`);
+  expect(res.status).toBe(403);
+});
+```
+This test must exist for GET, PATCH, and DELETE on every resource.
+
+## Do not mock Prisma in integration tests
+Use a real test database (`DATABASE_TEST_URL`). Mocking Prisma hides the exact query bugs AI introduces (missing `tenantId`, wrong `findUnique` vs `findFirst`).
+
+## Test helpers pattern
+```typescript
+// tests/helpers/factories.ts
+export async function createUser(email = 'test@test.com') { ... }
+export async function loginAs(email: string): Promise<string> { ... } // returns token
+export async function createBoard(token: string, title = 'Test Board') { ... }
+```
+
+## Forbidden patterns
+- No `toMatchSnapshot()` — snapshots confirm nothing meaningful
+- No empty `catch` blocks in test helpers
+- No `any` in test files — use typed helpers
+
+## Zustand store tests must test rollback
+Every store action that triggers a mutation must have a corresponding rollback test that verifies the state is restored to its pre-mutation snapshot.
+
+## Non-happy-path edge cases to always include
+- Title as empty string `""`
+- Title as whitespace only `"   "`
+- Position as negative number `-1`
+- Position as float `1.5`
+- ID fields as non-UUID strings `"not-a-uuid"`
+- Moving a card to a lane in a different board
+- Deleting a board and verifying its lanes and cards are gone
