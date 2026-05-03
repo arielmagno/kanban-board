@@ -1211,8 +1211,13 @@ Images embedded in Markdown are stored as base64 data URIs inline. Max image siz
 - `BoardCard`: visibility badge (emerald `Globe · Public` or gray `Lock · Private`); rename button hidden for non-owners; meta row shows `Oct 15, 2025 · You` (or owner's name)
 - `BoardList`: `useSocketBoards()` enables real-time board list refresh across all logged-in users
 
+#### 7.3 — Rich Text Descriptions ✅ COMPLETE
+- Installed `@uiw/react-md-editor` (dynamically imported with `ssr: false` to avoid SSR issues)
+- `card-modal.tsx`: replaced `<textarea>` with `<MDEditor>` (`preview="edit"`, height 180, `data-color-mode="light"`, imports `markdown-editor.css`)
+- `card-item.tsx`: replaced plain `<p>` description with `<MDPreview>` (`@uiw/react-md-editor`'s `Markdown` sub-component, also dynamically imported)
+- Modal widened from `max-w-md` → `max-w-2xl` to accommodate the editor toolbar
+
 #### Remaining stretch goals (in order)
-3. Rich text: swap textarea for `@uiw/react-md-editor` in `CardModal`
 4. Dark mode: Tailwind `dark:` classes + settings panel Zustand store
 5. REST API docs: OpenAPI JSON via `zod-to-openapi`
 

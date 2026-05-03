@@ -1,10 +1,30 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import { X } from 'lucide-react';
 import { useCreateCard, useUpdateCard } from '../hooks/use-card';
 import { createCardSchema } from '@boardflow/shared';
 import type { Card } from '../board.types';
+import '@uiw/react-md-editor/markdown-editor.css';
+import {
+  bold,
+  image,
+  quote,
+  strikethrough,
+  unorderedListCommand,
+} from '@uiw/react-md-editor';
+
+const MDEditor = dynamic(() => import('@uiw/react-md-editor'), { ssr: false });
+
+/** Bold, strikethrough, blockquote (indent), bullets, image — matches a minimal Todoist-style bar */
+const CARD_DESCRIPTION_COMMANDS = [
+  bold,
+  strikethrough,
+  quote,
+  unorderedListCommand,
+  image,
+];
 
 interface CardModalProps {
   boardId: string;
@@ -49,9 +69,11 @@ export function CardModal({ boardId, laneId, editCard, onClose }: CardModalProps
   return (
     <div
       className="fixed inset-0 bg-black/30 flex items-end sm:items-center justify-center z-50 p-4"
-      onClick={(e) => e.target === e.currentTarget && onClose()}
+      onMouseDown={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
     >
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 animate-slide-up">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl p-6 animate-slide-up" onMouseDown={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-base font-bold text-gray-900">
             {editCard ? 'Edit card' : 'Add card'}
@@ -74,13 +96,20 @@ export function CardModal({ boardId, laneId, editCard, onClose }: CardModalProps
             {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
           </div>
 
-          <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Add a description (optional)"
-            rows={3}
-            className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#4a9e7f] transition resize-none"
-          />
+          <div data-color-mode="light" className="rounded-xl border border-gray-200 overflow-hidden [&_.w-md-editor]:shadow-none [&_.w-md-editor]:!rounded-xl [&_.w-md-editor-toolbar]:!py-1.5 [&_.w-md-editor-toolbar]:!px-1 [&_.w-md-editor-toolbar_li_button]:!p-1.5">
+            <MDEditor
+              value={description}
+              onChange={(val) => setDescription(val ?? '')}
+              commands={CARD_DESCRIPTION_COMMANDS}
+              extraCommands={[]}
+              preview="edit"
+              height={168}
+              visibleDragbar={false}
+              highlightEnable={false}
+              tabSize={2}
+              textareaProps={{ placeholder: 'Add notes (optional)' }}
+            />
+          </div>
 
           {(createCard.isError || updateCard.isError) && (
             <p className="text-xs text-rose-500 bg-rose-50 rounded-lg px-3 py-2">

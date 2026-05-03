@@ -5,15 +5,37 @@ import Link from 'next/link';
 import { ChevronLeft, Pencil, Check, X, Palette } from 'lucide-react';
 import { useUpdateBoard } from '../hooks/use-board';
 import { BoardColorPicker } from './board-color-picker';
+import { useOnClickOutside } from '@/lib/use-on-click-outside';
 import type { Board } from '../board.types';
 
-export function BoardHeader({ board }: { board: Board }) {
+export function BoardHeader({
+  board,
+  dismissOverlays = false,
+  isOwner = true,
+}: {
+  board: Board;
+  dismissOverlays?: boolean;
+  isOwner?: boolean;
+}) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(board.title);
   const [showColors, setShowColors] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const colorRef = useRef<HTMLDivElement>(null);
+  const editRef = useRef<HTMLDivElement>(null);
   const updateBoard = useUpdateBoard(board.id);
+
+  useOnClickOutside(editRef, () => {
+    if (!editing) return;
+    submit();
+  }, editing);
+
+  useEffect(() => {
+    if (!dismissOverlays) return;
+    setEditing(false);
+    setShowColors(false);
+    setDraft(board.title);
+  }, [dismissOverlays, board.title]);
 
   useEffect(() => {
     if (!editing) setDraft(board.title);
@@ -30,6 +52,7 @@ export function BoardHeader({ board }: { board: Board }) {
   }, [showColors]);
 
   function startEdit() {
+    setShowColors(false);
     setDraft(board.title);
     setEditing(true);
     setTimeout(() => inputRef.current?.select(), 0);
@@ -66,13 +89,12 @@ export function BoardHeader({ board }: { board: Board }) {
         </Link>
 
         {editing ? (
-          <div className="flex items-center gap-2 min-w-0">
+          <div ref={editRef} className="flex items-center gap-2 min-w-0">
             <input
               ref={inputRef}
               autoFocus
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
-              onBlur={submit}
               onKeyDown={onKeyDown}
               className="font-bold text-gray-900 text-base bg-transparent border-b-2 border-[#4a9e7f] focus:outline-none min-w-0 w-48 sm:w-72"
             />
@@ -85,21 +107,27 @@ export function BoardHeader({ board }: { board: Board }) {
               <X size={15} />
             </button>
           </div>
-        ) : (
+        ) : isOwner ? (
           <button onClick={startEdit} className="group flex items-center gap-1.5 text-left min-w-0" title="Click to rename">
             <h1 className="font-bold text-gray-900 text-base leading-tight truncate">{board.title}</h1>
             <Pencil size={13} className="text-gray-300 group-hover:text-gray-500 transition flex-shrink-0" />
           </button>
+        ) : (
+          <h1 className="font-bold text-gray-900 text-base leading-tight truncate">{board.title}</h1>
         )}
       </div>
 
       {/* Background color picker */}
-      <div ref={colorRef} className="relative">
-        <button
-          onClick={() => setShowColors((s) => !s)}
-          title="Board background color"
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm text-gray-600 hover:bg-black/10 transition"
-        >
+      {isOwner && (
+        <div ref={colorRef} className="relative">
+          <button
+            onClick={() => {
+              if (editing) submit();
+              setShowColors((s) => !s);
+            }}
+            title="Board background color"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm text-gray-600 hover:bg-black/10 transition"
+          >
           <Palette size={15} />
           <span className="hidden sm:inline text-xs font-medium">Background</span>
           {board.color && (
@@ -114,7 +142,8 @@ export function BoardHeader({ board }: { board: Board }) {
             <BoardColorPicker value={board.color} onChange={(c) => { handleColorChange(c); setShowColors(false); }} />
           </div>
         )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

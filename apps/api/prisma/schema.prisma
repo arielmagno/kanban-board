@@ -37,6 +37,7 @@ model Lane {
   title     String
   position  Int
   isDefault Boolean  @default(false)
+  color     String?
   boardId   String
   board     Board    @relation(fields: [boardId], references: [id], onDelete: Cascade)
   cards     Card[]

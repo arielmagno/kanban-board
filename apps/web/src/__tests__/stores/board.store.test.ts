@@ -9,12 +9,18 @@ function makeBoard(): Board {
     color: null,
     tenantId: 'tenant-1',
     createdAt: '2024-01-01T00:00:00.000Z',
+    owner: {
+      id: 'user-1',
+      fullName: 'Test User',
+      email: 'test@example.com',
+    },
     lanes: [
       {
         id: 'lane-1',
         title: 'Todo',
         position: 0,
         isDefault: true,
+        color: '0',
         cards: [
           { id: 'card-1', title: 'Card A', position: 0, laneId: 'lane-1', createdAt: '', updatedAt: '' },
           { id: 'card-2', title: 'Card B', position: 1, laneId: 'lane-1', createdAt: '', updatedAt: '' },
@@ -26,6 +32,7 @@ function makeBoard(): Board {
         title: 'In Progress',
         position: 1,
         isDefault: false,
+        color: '1',
         cards: [
           { id: 'card-4', title: 'Card D', position: 0, laneId: 'lane-2', createdAt: '', updatedAt: '' },
         ],
@@ -151,6 +158,7 @@ describe('useBoardStore', () => {
         title: 'Done',
         position: 2,
         isDefault: false,
+        color: '2',
         cards: [{ id: 'card-5', title: 'Card E', position: 0, laneId: 'lane-3', createdAt: '', updatedAt: '' }],
       });
       useBoardStore.getState().setBoard(board);
@@ -176,6 +184,32 @@ describe('useBoardStore', () => {
         'card-1', 'card-2', 'card-3',
       ]);
       expect(restored.lanes.find((l) => l.id === 'lane-2')!.cards.map((c) => c.id)).toEqual(['card-4']);
+    });
+  });
+
+  describe('reorderLanes', () => {
+    it('does nothing when board is null', () => {
+      useBoardStore.getState().reorderLanes(['lane-2', 'lane-1']);
+      expect(useBoardStore.getState().board).toBeNull();
+    });
+
+    it('reorders lanes and updates their positions', () => {
+      useBoardStore.getState().setBoard(makeBoard());
+      useBoardStore.getState().reorderLanes(['lane-2', 'lane-1']);
+
+      const board = useBoardStore.getState().board!;
+      expect(board.lanes.map((l) => l.id)).toEqual(['lane-2', 'lane-1']);
+      expect(board.lanes[0].position).toBe(0);
+      expect(board.lanes[1].position).toBe(1);
+    });
+
+    it('filters out invalid lane IDs', () => {
+      useBoardStore.getState().setBoard(makeBoard());
+      useBoardStore.getState().reorderLanes(['lane-2', 'invalid-lane']);
+
+      const board = useBoardStore.getState().board!;
+      expect(board.lanes.map((l) => l.id)).toEqual(['lane-2']);
+      expect(board.lanes[0].position).toBe(0);
     });
   });
 });

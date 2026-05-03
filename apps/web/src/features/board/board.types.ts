@@ -13,6 +13,7 @@ export interface Lane {
   title: string;
   position: number;
   isDefault: boolean;
+  color?: string;
   cards: Card[];
 }
 
@@ -22,6 +23,7 @@ export interface Board {
   color?: string | null;
   tenantId: string;
   createdAt: string;
+  owner: BoardOwner;
   lanes: Lane[];
 }
 

@@ -19,6 +19,7 @@ const BOARD_SELECT = {
       title: true,
       position: true,
       isDefault: true,
+      color: true,
       cards: {
         select: {
           id: true,
@@ -84,9 +85,9 @@ export async function createBoard(tenantId: string, ownerId: string, dto: Create
 
     await tx.lane.createMany({
       data: [
-        { title: 'To Do', position: 0, isDefault: true, boardId, tenantId },
-        { title: 'In Progress', position: 1, isDefault: true, boardId, tenantId },
-        { title: 'Done', position: 2, isDefault: true, boardId, tenantId },
+        { title: 'To Do', position: 0, isDefault: true, color: '0', boardId, tenantId },
+        { title: 'In Progress', position: 1, isDefault: true, color: '1', boardId, tenantId },
+        { title: 'Done', position: 2, isDefault: true, color: '2', boardId, tenantId },
       ],
     });
 

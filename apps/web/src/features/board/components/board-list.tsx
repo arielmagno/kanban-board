@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useBoards, useUpdateBoard } from '../hooks/use-board';
 import { useSocketBoards } from '../hooks/use-socket-boards';
 import { CreateBoardModal } from './create-board-modal';
 import { useAuthStore } from '@/stores/auth.store';
+import { useOnClickOutside } from '@/lib/use-on-click-outside';
 import { LayoutGrid, Plus, Clock, Pencil, Check, X, Globe, Lock, User } from 'lucide-react';
 import type { BoardSummary } from '../board.types';
 
@@ -18,33 +19,56 @@ function BoardSkeleton() {
   );
 }
 
-function BoardCard({ board, currentUserId }: { board: BoardSummary; currentUserId: string | undefined }) {
-  const [editing, setEditing] = useState(false);
+function BoardCard({
+  board,
+  currentUserId,
+  isRenaming,
+  onRenamingChange,
+}: {
+  board: BoardSummary;
+  currentUserId: string | undefined;
+  isRenaming: boolean;
+  onRenamingChange: (boardId: string | null) => void;
+}) {
   const [draft, setDraft] = useState(board.title);
   const inputRef = useRef<HTMLInputElement>(null);
+  const renamePanelRef = useRef<HTMLDivElement>(null);
   const updateBoard = useUpdateBoard(board.id);
   const isOwner = board.owner.id === currentUserId;
+
+  useOnClickOutside(renamePanelRef, () => {
+    if (!isRenaming) return;
+    submit();
+  }, isRenaming);
 
   const ownerLabel = isOwner
     ? 'You'
     : (board.owner.fullName?.trim() || board.owner.email);
 
+  useEffect(() => {
+    setDraft(board.title);
+  }, [board.title, isRenaming]);
+
+  useEffect(() => {
+    if (isRenaming) setTimeout(() => inputRef.current?.select(), 0);
+  }, [isRenaming]);
+
   function startEdit(e: React.MouseEvent) {
     e.preventDefault();
+    e.stopPropagation();
     setDraft(board.title);
-    setEditing(true);
-    setTimeout(() => inputRef.current?.select(), 0);
+    onRenamingChange(board.id);
   }
 
   function cancel() {
     setDraft(board.title);
-    setEditing(false);
+    onRenamingChange(null);
   }
 
   function submit() {
     const trimmed = draft.trim();
     if (!trimmed || trimmed === board.title) { cancel(); return; }
-    updateBoard.mutate({ title: trimmed }, { onSuccess: () => setEditing(false), onError: cancel });
+    updateBoard.mutate({ title: trimmed }, { onSuccess: () => onRenamingChange(null), onError: cancel });
   }
 
   function onKeyDown(e: React.KeyboardEvent) {
@@ -52,9 +76,9 @@ function BoardCard({ board, currentUserId }: { board: BoardSummary; currentUserI
     if (e.key === 'Escape') cancel();
   }
 
-  if (editing) {
+  if (isRenaming) {
     return (
-      <div className="group bg-white rounded-2xl border-2 border-[#4a9e7f] p-5 shadow-sm">
+      <div ref={renamePanelRef} className="group bg-white rounded-2xl border-2 border-[#4a9e7f] p-5 shadow-sm">
         <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-[#d6ede2] mb-3">
           <LayoutGrid size={18} className="text-[#4a9e7f]" />
         </div>
@@ -63,7 +87,6 @@ function BoardCard({ board, currentUserId }: { board: BoardSummary; currentUserI
           autoFocus
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
-          onBlur={submit}
           onKeyDown={onKeyDown}
           className="w-full text-sm font-semibold text-gray-900 bg-transparent border-b border-[#4a9e7f] focus:outline-none mb-2"
         />
@@ -153,9 +176,15 @@ function BoardCard({ board, currentUserId }: { board: BoardSummary; currentUserI
 export function BoardList() {
   const { data: boards, isLoading, isError, refetch } = useBoards();
   const [showCreate, setShowCreate] = useState(false);
+  const [renamingBoardId, setRenamingBoardId] = useState<string | null>(null);
   const user = useAuthStore((s) => s.user);
   useSocketBoards();
   const firstName = user?.fullName?.split(' ')[0] ?? null;
+
+  function openCreateModal() {
+    setRenamingBoardId(null);
+    setShowCreate(true);
+  }
 
   return (
     <div className="flex-1 overflow-y-auto">
@@ -168,7 +197,7 @@ export function BoardList() {
             <p className="text-sm text-gray-500 mt-1">Select a board to get started</p>
           </div>
           <button
-            onClick={() => setShowCreate(true)}
+            onClick={openCreateModal}
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#f5c842] text-gray-900 font-semibold text-sm hover:bg-[#f0ba1a] active:scale-[0.98] transition"
           >
             <Plus size={16} />
@@ -199,7 +228,7 @@ export function BoardList() {
             <p className="text-gray-600 font-medium mb-1">No boards yet</p>
             <p className="text-sm text-gray-400 mb-6">Create your first board to get started</p>
             <button
-              onClick={() => setShowCreate(true)}
+              onClick={openCreateModal}
               className="px-5 py-2.5 rounded-xl bg-[#f5c842] text-gray-900 font-semibold text-sm hover:bg-[#f0ba1a] transition"
             >
               Create board
@@ -210,7 +239,13 @@ export function BoardList() {
         {!isLoading && !isError && boards && boards.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {boards.map((board) => (
-              <BoardCard key={board.id} board={board} currentUserId={user?.id} />
+              <BoardCard
+                key={board.id}
+                board={board}
+                currentUserId={user?.id}
+                isRenaming={renamingBoardId === board.id}
+                onRenamingChange={setRenamingBoardId}
+              />
             ))}
           </div>
         )}

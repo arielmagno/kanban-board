@@ -23,9 +23,12 @@ export async function createLane(tenantId: string, boardId: string, dto: CreateL
   });
   const position = (maxPos._max.position ?? -1) + 1;
 
+  // Assign color based on position to maintain consistent colors
+  const colorIndex = position % 4; // We have 4 colors in LANE_COLORS
+
   return prisma.lane.create({
-    data: { title: dto.title, position, boardId, tenantId, isDefault: false },
-    select: { id: true, title: true, position: true, isDefault: true },
+    data: { title: dto.title, position, color: colorIndex.toString(), boardId, tenantId, isDefault: false },
+    select: { id: true, title: true, position: true, isDefault: true, color: true },
   });
 }
 
@@ -34,7 +37,7 @@ export async function updateLane(tenantId: string, laneId: string, dto: UpdateLa
   return prisma.lane.update({
     where: { id: laneId },
     data: { title: dto.title },
-    select: { id: true, title: true, position: true, isDefault: true },
+    select: { id: true, title: true, position: true, isDefault: true, color: true },
   });
 }
 

@@ -10,6 +10,8 @@ A fullstack Kanban board application built with Next.js, Express, PostgreSQL, an
 | Backend   | Express.js, TypeScript, Prisma ORM               |
 | Database  | PostgreSQL 16                                    |
 | Auth      | JWT (access + refresh tokens), httpOnly cookies  |
+| Real-time | Socket.io (board + board-list live updates)      |
+| Rich text | `@uiw/react-md-editor` (card descriptions)       |
 | Testing   | Vitest + Supertest (API integration tests)       |
 | Container | Docker + Docker Compose                          |
 
@@ -151,3 +153,5 @@ All endpoints (except `/api/auth/*`) require `Authorization: Bearer <accessToken
 - **Default lanes**: Creating a board atomically seeds "To Do", "In Progress", and "Done" lanes in a Prisma transaction. Default lanes cannot be deleted.
 - **Position integrity**: Card/lane reordering uses gap-shifting transactions (no float positions) to ensure no duplicates.
 - **Auth**: Short-lived (15 min) JWT access tokens; long-lived (7 day) httpOnly `SameSite=Lax` refresh tokens. The Axios client intercepts 401s and silently refreshes.
+- **Real-time**: Socket.io rooms per board (`board:<id>`) and a global `__boards__` room. Events invalidate React Query cache without a full refetch.
+- **Rich text**: Card descriptions are stored as Markdown and rendered via `@uiw/react-md-editor`. The editor and preview components are dynamically imported (`ssr: false`) to avoid SSR issues.

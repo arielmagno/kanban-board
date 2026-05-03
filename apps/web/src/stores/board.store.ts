@@ -7,6 +7,7 @@ interface BoardState {
   snapshot: () => Board | null;
   rollback: (snap: Board | null) => void;
   moveCard: (cardId: string, fromLaneId: string, toLaneId: string, toPosition: number) => void;
+  reorderLanes: (laneIds: string[]) => void;
 }
 
 export const useBoardStore = create<BoardState>((set, get) => ({
@@ -51,5 +52,17 @@ export const useBoardStore = create<BoardState>((set, get) => ({
     });
 
     set({ board: { ...board, lanes } });
+  },
+
+  reorderLanes: (laneIds) => {
+    const board = get().board;
+    if (!board) return;
+
+    const newLanes = laneIds
+      .map((id) => board.lanes.find((l) => l.id === id))
+      .filter((l): l is Lane => l !== undefined)
+      .map((l, i) => ({ ...l, position: i }));
+
+    set({ board: { ...board, lanes: newLanes } });
   },
 }));

@@ -27,8 +27,13 @@ export function CreateBoardModal({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
+    <div
+      className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4"
+      onMouseDown={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6" onMouseDown={(e) => e.stopPropagation()}>
         <h2 className="text-lg font-bold text-gray-900 mb-4">New board</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
