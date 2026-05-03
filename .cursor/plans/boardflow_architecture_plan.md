@@ -966,10 +966,14 @@ Images embedded in Markdown are stored as base64 data URIs inline. Max image siz
 - Docker Compose: `db`, `api`, `web` services + `db-test` and `test` with `--profile test`
 - `.env.example`, `.gitignore`, both Dockerfiles
 
-### Milestone 2 — Auth (45 min)
-- Backend: register/login/refresh endpoints, bcrypt, JWT, Zod validation
-- Frontend: login + register pages, auth store (Zustand), token storage
-- Middleware: JWT guard, centralized error handler
+### Milestone 2 — Auth ✅ COMPLETE
+- Backend: `register` (201, bcrypt hash, 409 on duplicate), `login` (200, timing-safe comparison, 401 for bad creds), `refresh` (cookie-based), `logout` (clears cookie)
+- JWT: `accessToken` 15min in response body, `refreshToken` 7d in httpOnly `sameSite: lax` cookie
+- Frontend: Zustand `useAuthStore` (setAuth / clearAuth, syncs access token to Axios interceptor)
+- Frontend: `auth.api.ts` API functions, `use-auth.ts` React Query mutations with redirect on success
+- Frontend: `LoginForm` + `RegisterForm` — client-side Zod validation with field errors, server error display
+- Frontend: `/login` and `/register` pages with branded auth layout; root `/` redirects to `/login`
+- Auth test suite: 15 tests covering bcrypt storage, 409 duplicate, 400 validation, 401 wrong creds, user enumeration prevention, httpOnly cookie, expired/malformed/wrong-secret tokens
 
 ### Milestone 3 — Board + Lane CRUD (60 min)
 - Backend: Board + Lane controllers/services with tenantId scoping

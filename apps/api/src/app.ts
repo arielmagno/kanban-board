@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import { errorMiddleware } from './middleware/error';
+import authRoutes from './modules/auth/auth.routes';
 
 export function createApp() {
   const app = express();
@@ -19,7 +20,7 @@ export function createApp() {
     res.json({ status: 'ok' });
   });
 
-  // Routes registered after auth is implemented (Milestone 2)
+  app.use('/api/auth', authRoutes);
 
   app.use(errorMiddleware);
 

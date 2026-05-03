@@ -10,7 +10,7 @@
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "paths": {
-      "@boardflow/shared": ["../../packages/shared/src/index.ts"]
+      "@boardflow/shared": ["../../packages/shared/dist/index.d.ts"]
     }
   },
   "include": ["src"],
