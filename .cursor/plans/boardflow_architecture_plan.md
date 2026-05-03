@@ -21,8 +21,8 @@ todos:
     content: "Milestone 6: API integration tests (Vitest + Supertest), non-happy-path coverage"
     status: completed
   - id: m7-stretch
-    content: "Milestone 7: Stretch goals in order — real-time (Socket.io), rich text, dark mode, OpenAPI"
-    status: pending
+    content: "Milestone 7: Stretch goals — real-time (Socket.io) ✅, board visibility + author ✅, rich text, dark mode, OpenAPI"
+    status: in_progress
 isProject: false
 ---
 
@@ -50,50 +50,106 @@ kanban-board/
 ├── docker-compose.yml
 ├── .env.example
 ├── apps/
-│   ├── web/                    # Next.js frontend
+│   ├── web/                         # Next.js 14 App Router frontend
 │   │   ├── Dockerfile
-│   │   ├── src/
-│   │   │   ├── app/            # App Router pages
-│   │   │   │   ├── (auth)/     # login, register
-│   │   │   │   ├── board/[id]/ # Kanban board page
-│   │   │   │   └── layout.tsx
-│   │   │   ├── features/
-│   │   │   │   ├── auth/       # login form, hooks, api calls
-│   │   │   │   ├── board/      # Board, Lane, Card components + hooks
-│   │   │   │   └── settings/   # Dark mode, settings panel
-│   │   │   ├── components/ui/  # shadcn/ui primitives
-│   │   │   ├── lib/
-│   │   │   │   ├── api.ts      # Axios/fetch wrapper
-│   │   │   │   └── queryClient.ts
-│   │   │   └── stores/         # Zustand stores
-│   └── api/                    # Express backend
+│   │   ├── vitest.config.mts        # Vitest config (ESM, jsdom, @boardflow/shared alias)
+│   │   └── src/
+│   │       ├── app/                 # App Router pages
+│   │       │   ├── (auth)/          # /login, /register — public
+│   │       │   ├── (app)/           # protected layout group
+│   │       │   │   ├── boards/      # /boards — board list
+│   │       │   │   ├── boards/[id]/ # /boards/:id — kanban board
+│   │       │   │   ├── tasks/       # placeholder
+│   │       │   │   ├── team/        # placeholder
+│   │       │   │   └── calendar/    # placeholder
+│   │       │   └── layout.tsx       # suppressHydrationWarning on <body>
+│   │       ├── features/
+│   │       │   ├── auth/
+│   │       │   │   ├── auth.api.ts
+│   │       │   │   ├── hooks/       # use-auth.ts
+│   │       │   │   └── components/  # LoginForm, RegisterForm
+│   │       │   └── board/
+│   │       │       ├── board.types.ts    # Card, Lane, Board, BoardSummary (+ owner, isPublic)
+│   │       │       ├── board.api.ts      # all fetch/mutate functions
+│   │       │       ├── hooks/
+│   │       │       │   ├── use-board.ts           # useBoards, useBoard, useCreateBoard…
+│   │       │       │   ├── use-card.ts            # useCreateCard (full DTO incl. description)…
+│   │       │       │   ├── use-socket-board.ts    # per-board room, board:update → invalidate
+│   │       │       │   └── use-socket-boards.ts   # __boards__ room, boards:update → invalidate
+│   │       │       └── components/
+│   │       │           ├── board-list.tsx          # owner + date meta, visibility badge, socket
+│   │       │           ├── board-card.tsx          # per-board card (rename owner-only)
+│   │       │           ├── create-board-modal.tsx  # Public/Private toggle
+│   │       │           ├── board-page-client.tsx   # useSocketBoard wired here
+│   │       │           ├── board-client.tsx        # DndContext, DragOverlay
+│   │       │           ├── lane-column.tsx
+│   │       │           ├── card-item.tsx
+│   │       │           ├── card-modal.tsx          # create + edit; description included on create
+│   │       │           └── board-color-picker.tsx
+│   │       ├── lib/
+│   │       │   ├── api.ts           # Axios client + auto-refresh interceptor
+│   │       │   ├── query-client.tsx # React Query provider
+│   │       │   └── socket.ts        # socket.io-client singleton (getSocket())
+│   │       ├── stores/
+│   │       │   ├── auth.store.ts    # Zustand: user {id, email, fullName}, token
+│   │       │   └── board.store.ts   # Zustand: moveCard optimistic, snapshot, rollback
+│   │       └── __tests__/
+│   │           ├── setup.ts
+│   │           ├── stores/
+│   │           │   ├── auth.store.test.ts
+│   │           │   └── board.store.test.ts
+│   │           ├── api/
+│   │           │   ├── auth.api.test.ts
+│   │           │   └── board.api.test.ts
+│   │           └── components/
+│   │               ├── login-form.test.tsx
+│   │               ├── register-form.test.tsx
+│   │               └── create-board-modal.test.tsx
+│   └── api/                         # Express backend
 │       ├── Dockerfile
+│       ├── prisma/
+│       │   ├── schema.prisma
+│       │   └── migrations/
+│       │       ├── 20260503000000_init/
+│       │       ├── 20260503000001_add_board_color/
+│       │       ├── 20260503000002_add_user_full_name/
+│       │       └── 20260503000003_add_board_visibility/
 │       ├── src/
+│       │   ├── index.ts             # http.createServer(app) + initSocket(httpServer)
+│       │   ├── app.ts               # Express app factory
+│       │   ├── socket.ts            # Socket.io singleton: initSocket, emitBoardUpdate, emitBoardsUpdate
 │       │   ├── modules/
-│       │   │   ├── auth/       # controller, service, routes
-│       │   │   ├── board/
-│       │   │   ├── lane/
+│       │   │   ├── auth/            # controller, service, routes
+│       │   │   ├── board/           # controller, service (visibility-aware), routes
+│       │   │   ├── lane/            # controller (emits board:update), service, routes
 │       │   │   └── card/
+│       │   │       ├── card.controller.ts   # emits board:update via board-id.helper
+│       │   │       ├── card.service.ts
+│       │   │       ├── card.routes.ts
+│       │   │       └── board-id.helper.ts   # getBoardIdForLane, getBoardIdForCard
 │       │   ├── middleware/
-│       │   │   ├── auth.ts     # JWT guard
-│       │   │   ├── error.ts    # centralized error handler
-│       │   │   └── validate.ts # Zod validation middleware
-│       │   ├── prisma/
-│       │   │   └── client.ts   # singleton Prisma client
-│       │   └── index.ts
+│       │   │   ├── auth.ts          # JWT guard, attaches req.user { userId, tenantId }
+│       │   │   └── error.ts         # centralized error handler
+│       │   └── prisma/
+│       │       └── client.ts        # singleton Prisma client
 │       └── tests/
-│           ├── auth.test.ts
-│           ├── board.test.ts
-│           ├── lane.test.ts
-│           └── card.test.ts
+│           ├── helpers/
+│           │   ├── setup.ts         # beforeEach: TRUNCATE all tables
+│           │   ├── factories.ts     # createUser, createBoard, createCard helpers
+│           │   └── request.ts       # authenticated supertest wrapper
+│           ├── auth.test.ts         # 15 tests: register, login, tokens, JWT edge cases
+│           ├── board.test.ts        # 16 tests: tenant isolation, cascade, visibility
+│           ├── lane.test.ts         # 14 tests: CRUD, default lane protection, reorder
+│           └── card.test.ts         # 15 tests: positions, cross-board, cross-tenant
 └── packages/
-    └── shared/                 # Shared Zod schemas + TypeScript types
-        ├── schemas/
-        │   ├── auth.ts
-        │   ├── board.ts
-        │   ├── lane.ts
-        │   └── card.ts
-        └── index.ts
+    └── shared/                      # Compiled + source Zod schemas + TypeScript types
+        ├── src/schemas/
+        │   ├── auth.ts              # registerSchema, loginSchema
+        │   ├── board.ts             # createBoardSchema (+isPublic), updateBoardSchema (+isPublic)
+        │   ├── lane.ts              # createLaneSchema, updateLaneSchema, reorderLanesSchema
+        │   └── card.ts             # createCardSchema, updateCardSchema, moveCardSchema
+        ├── src/index.ts
+        └── dist/                    # built output, referenced by apps/api tsconfig paths
 ```
 
 ---
@@ -104,8 +160,9 @@ kanban-board/
 model User {
   id           String   @id @default(uuid())
   email        String   @unique
+  fullName     String?
   passwordHash String
-  tenantId     String   @default(uuid())
+  tenantId     String   @unique @default(uuid())
   boards       Board[]
   createdAt    DateTime @default(now())
 }
@@ -113,24 +170,28 @@ model User {
 model Board {
   id        String   @id @default(uuid())
   title     String
+  color     String?
+  isPublic  Boolean  @default(true)   // public = visible to all authenticated users
   tenantId  String
   ownerId   String
-  owner     User     @relation(fields: [ownerId], references: [id])
+  owner     User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   lanes     Lane[]
   createdAt DateTime @default(now())
 
   @@index([tenantId])
+  @@index([isPublic])
 }
 
 model Lane {
-  id        String @id @default(uuid())
+  id        String   @id @default(uuid())
   title     String
-  position  Int    // for ordering
-  isDefault Boolean @default(false)  // default lanes cannot be deleted
+  position  Int                         // for ordering
+  isDefault Boolean  @default(false)   // default lanes cannot be deleted
   boardId   String
-  board     Board  @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  board     Board    @relation(fields: [boardId], references: [id], onDelete: Cascade)
   cards     Card[]
   tenantId  String
+  createdAt DateTime @default(now())
 
   @@index([boardId])
   @@index([tenantId])
@@ -139,8 +200,8 @@ model Lane {
 model Card {
   id          String   @id @default(uuid())
   title       String
-  description String?  // Markdown content (stretch #2)
-  position    Int      // for ordering within a lane
+  description String?                  // Markdown content (stretch #2)
+  position    Int                      // for ordering within a lane
   laneId      String
   lane        Lane     @relation(fields: [laneId], references: [id], onDelete: Cascade)
   tenantId    String
@@ -153,9 +214,18 @@ model Card {
 ```
 
 Key design decisions:
-- `tenantId` on every model — scoped at the `User` level (user IS the tenant in single-user mode; shared in collaboration)
-- `position` integer on `Lane` and `Card` for drag-and-drop ordering (fractional indexing on reorder)
+- `tenantId` on every model — scoped at the `User` level (user IS the tenant; also used to scope write access)
+- `isPublic` on `Board` — public boards are visible (read-only) to ALL authenticated users; private boards visible only to the owner
+- `ownerId` on `Board` — write operations (create/update/delete cards, lanes, board) always require `tenantId` match; read operations check `isPublic` first
+- `color` on `Board` — optional hex string for board background color (10-swatch picker)
+- `position` integer on `Lane` and `Card` for drag-and-drop ordering (re-indexed in Prisma transactions)
 - Cascade deletes: deleting a Board cascades → Lanes → Cards
+
+Migrations applied (in order):
+1. `20260503000000_init` — initial schema
+2. `20260503000001_add_board_color` — `color` on Board
+3. `20260503000002_add_user_full_name` — `fullName` on User
+4. `20260503000003_add_board_visibility` — `isPublic` on Board
 
 ---
 
@@ -169,15 +239,25 @@ Key design decisions:
 
 ### Board Module — `GET/POST /api/boards`, `GET/PATCH/DELETE /api/boards/:id`
 
-- All queries filter by `tenantId` from JWT
+**Visibility-aware access control** (implemented in Milestone 7):
+- `GET /api/boards` returns: all public boards (any tenant) + the requester's own private boards
+- `GET /api/boards/:id` returns the board if `isPublic = true` OR if `tenantId` matches; returns **403** (not 404) for private boards from another tenant
+- `POST /api/boards` accepts `{ title, color?, isPublic? }` — defaults `isPublic` to `true`
+- `PATCH /api/boards/:id` accepts `{ title?, color?, isPublic? }` — only the owner (tenantId match) can update
+- `DELETE /api/boards/:id` — only the owner can delete
+- Board list and detail responses include `owner: { id, fullName, email }` for display in the UI
+- After create / update / delete, the controller emits `boards:update` over Socket.io to all clients in the `__boards__` room (boards list page)
 
-### Lane Module — `POST /api/boards/:boardId/lanes`, `PATCH/DELETE /api/lanes/:id`, `PATCH /api/lanes/reorder`
+### Lane Module — `POST /api/boards/:boardId/lanes`, `PATCH/DELETE /api/lanes/:id`, `PATCH /api/boards/:boardId/lanes/reorder`
 
-- Reorder endpoint accepts `[{ id, position }]` array — bulk update
+- Reorder endpoint accepts `{ orderedIds: string[] }` — full ordered ID list, bulk position update in a transaction
+- After create / update / delete / reorder, the controller emits `board:update` to the board's Socket.io room
 
 ### Card Module — `POST /api/lanes/:laneId/cards`, `PATCH/DELETE /api/cards/:id`, `PATCH /api/cards/move`
 
-- Move endpoint: `{ cardId, toLaneId, position }` — handles cross-lane moves
+- Move endpoint: `{ cardId, toLaneId, position }` — handles cross-lane and same-lane moves
+- `createCard` now accepts `{ title, description?, laneId }` — description is forwarded to the DB (bug fix from earlier: it was being ignored on creation)
+- After create / update / delete / move, the controller emits `board:update` to the board's Socket.io room via `board-id.helper.ts`
 
 ### Controller → Service → Prisma pattern
 
@@ -206,12 +286,63 @@ async move(tenantId: string, dto: MoveCardDto) {
 ```mermaid
 flowchart LR
   ReactQuery -->|"fetch /api/boards/:id"| APIServer
-  APIServer -->|"Board + Lanes + Cards"| ReactQuery
+  APIServer -->|"Board + Lanes + Cards + owner"| ReactQuery
   ReactQuery --> BoardStore["Zustand\nboardStore"]
   BoardStore --> BoardUI
   BoardUI -->|"optimistic update"| BoardStore
   BoardUI -->|"mutate /api/cards/move"| ReactQuery
+  APIServer -->|"board:update"| SocketIO["Socket.io\nServer"]
+  SocketIO -->|"board:update"| useSocketBoard["useSocketBoard\nhook"]
+  useSocketBoard -->|"invalidateQueries"| ReactQuery
 ```
+
+### Real-time Architecture (implemented)
+
+The real-time layer sits entirely in the Socket.io transport — React Query remains the single source of truth.
+
+```
+Browser A                       Express API                     Browser B
+──────────                      ───────────                     ─────────
+BoardPageClient
+  └─ useSocketBoard(boardId)
+       └─ socket.emit('board:join', boardId)  ──────────────► joins room: boardId
+
+User drags card ─► useMoveCard.mutate()  ─► PATCH /api/cards/move
+                                              └─ cardService.move()
+                                              └─ res.json(card)          ──────────► 200 OK
+                                              └─ emitBoardUpdate(boardId) ─────────────────────────► socket.to(boardId).emit('board:update')
+                                                                                           └─ useSocketBoard: invalidateQueries(['boards', boardId])
+                                                                                           └─ useBoard re-fetches, UI updates
+```
+
+**Boards list real-time** (`/boards` page):
+
+```
+Browser A (on /boards)          Express API                    Browser B (creates a board)
+──────────────────────          ───────────                    ───────────────────────────
+BoardList
+  └─ useSocketBoards()
+       └─ socket.emit('boards:join') ──────────────────────► joins room: __boards__
+
+                                POST /api/boards  ◄──────────── createBoard.mutate()
+                                  └─ boardService.createBoard()
+                                  └─ res.status(201).json(board)
+                                  └─ emitBoardsUpdate() ──────► socket.to('__boards__').emit('boards:update')
+                            ◄──────── boards:update event
+  └─ invalidateQueries(['boards'])
+  └─ useBoards re-fetches, new board appears instantly
+```
+
+**Key files:**
+
+| File | Role |
+|---|---|
+| `apps/api/src/socket.ts` | Singleton `Server`, `initSocket()`, `emitBoardUpdate()`, `emitBoardsUpdate()` |
+| `apps/api/src/index.ts` | `http.createServer(app)` + `initSocket(httpServer)` |
+| `apps/api/src/modules/card/board-id.helper.ts` | Resolves `boardId` from `laneId` or `cardId` for socket emission |
+| `apps/web/src/lib/socket.ts` | Singleton `socket.io-client` instance (`getSocket()`) |
+| `apps/web/src/features/board/hooks/use-socket-board.ts` | Per-board room join/leave + `board:update` → `invalidateQueries` |
+| `apps/web/src/features/board/hooks/use-socket-boards.ts` | Global boards room + `boards:update` → `invalidateQueries` |
 
 ### Key Components
 
@@ -272,26 +403,32 @@ Every test category below targets one of these failure modes directly.
 apps/api/
 └── tests/
     ├── helpers/
-    │   ├── setup.ts        # beforeAll: connect test DB, run migrations
-    │   ├── teardown.ts     # afterAll: wipe test DB
+    │   ├── setup.ts        # beforeEach: TRUNCATE all tables
     │   ├── factories.ts    # createUser(), createBoard(), createCard() helpers
     │   └── request.ts      # authenticated supertest wrapper
-    ├── auth.test.ts
-    ├── board.test.ts
-    ├── lane.test.ts
-    └── card.test.ts
+    ├── auth.test.ts        # 15 tests
+    ├── board.test.ts       # 16 tests
+    ├── lane.test.ts        # 14 tests
+    └── card.test.ts        # 15 tests
 
 apps/web/
-└── src/__tests__/
+└── src/__tests__/          # Vitest + @testing-library/react + jsdom (69 tests total)
+    ├── setup.ts            # @testing-library/jest-dom import
     ├── stores/
-    │   └── boardStore.test.ts
-    ├── schemas/
-    │   └── cardSchemas.test.ts
+    │   ├── auth.store.test.ts    # setAuth, clearAuth, token sync
+    │   └── board.store.test.ts   # moveCard optimistic, snapshot, rollback
+    ├── api/
+    │   ├── auth.api.test.ts      # registerUser, loginUser, logoutUser (mocked apiClient)
+    │   └── board.api.test.ts     # fetchBoards, createBoard (isPublic), moveCard…
     └── components/
-        └── CardModal.test.tsx
+        ├── login-form.test.tsx         # render, valid submit, empty field, server error
+        ├── register-form.test.tsx      # render, whitespace name, password length, dupe email
+        └── create-board-modal.test.tsx # render, valid submit (with onSuccess), whitespace title, cancel
 ```
 
-Tests use a real Postgres instance (`DATABASE_URL` points to a `kanban_test` database). Each test file runs `beforeEach` cleanup to ensure isolation — no mocks for the database layer, because mocks hide the exact bugs AI tends to introduce in Prisma queries.
+**API tests** use a real Postgres instance (`DATABASE_URL` pointing to a `kanban_test` database). Each `beforeEach` `TRUNCATE`s all tables — no mocks for the database layer, because mocks hide the exact bugs AI tends to introduce in Prisma queries.
+
+**Web tests** use `jsdom` + `@testing-library/react`. All external dependencies (`apiClient`, `useCreateBoard`, etc.) are mocked via `vi.mock()`. The `vi.hoisted()` pattern ensures mock factories are hoisted correctly when modules reference each other at import time.
 
 ---
 
@@ -514,10 +651,13 @@ AI often returns wrong status codes. These are fast, explicit contracts.
 |---|---|
 | `POST /auth/register` success | 201 |
 | `POST /auth/login` success | 200 |
-| `GET /boards/:id` own board | 200 |
-| `GET /boards/:id` other tenant | 403 |
+| `GET /boards` returns public boards + own private | 200 |
+| `GET /boards/:id` public board, any tenant | 200 |
+| `GET /boards/:id` private board, own tenant | 200 |
+| `GET /boards/:id` private board, other tenant | **403** |
 | `GET /boards/:id` non-existent UUID | 404 |
 | `POST /boards` missing title | 400 |
+| `POST /boards` with `isPublic: false` | 201 (private) |
 | `DELETE /boards/:id` success | 204 |
 | `PATCH /cards/move` card not found | 404 |
 | `PATCH /cards/move` cross-board lane | 403 |
@@ -947,6 +1087,25 @@ This keeps `docker compose up` (no profile) as the clean app boot — tests only
 
 ---
 
+### Board Visibility — Read vs. Write Access Split
+
+Public boards break the simple "all queries filter by `tenantId`" rule. The access model is:
+
+| Operation | Access rule |
+|---|---|
+| Read board list | `isPublic = true` OR `tenantId = own` |
+| Read board detail + cards | `isPublic = true` OR `tenantId = own` |
+| Create/update/delete board | `tenantId = own` only |
+| Create/update/delete lanes | `tenantId = own` only |
+| Create/update/delete cards | `tenantId = own` only |
+| Move card | `tenantId = own` only |
+
+Cross-tenant reads on private boards return **403** (not 404 — to avoid leaking resource existence).
+
+The UI shows the rename button only for board owners (compared via `board.owner.id === user.id` from Zustand auth store), so non-owners don't see edit affordances they can't use.
+
+---
+
 ### Rich Text Images — Base64 Stored in DB (Stretch #2)
 
 Images embedded in Markdown are stored as base64 data URIs inline. Max image size enforced at the API level (Zod: `description` field max 100,000 chars). No external storage service required. The Markdown editor (`@uiw/react-md-editor`) handles image paste/drop via the `onImageUpload` callback which converts to base64.
@@ -959,7 +1118,7 @@ Images embedded in Markdown are stored as base64 data URIs inline. Max image siz
 - Initialized npm workspaces monorepo (`apps/api`, `apps/web`, `packages/shared`)
 - `packages/shared`: Zod schemas for auth, board, lane, card — exported types inferred from schemas
 - `apps/api`: Express + Prisma + TypeScript scaffolded with error types, auth/validate/error middleware, singleton Prisma client
-- `apps/web`: Next.js 16 App Router + Tailwind v4 + Inter font + design token CSS variables
+- `apps/web`: Next.js 16 App Router + Tailwind v4 + Inter font + design token CSS variables 
 - `apps/web/src/lib/api.ts`: Axios client with access token memory storage + auto-refresh interceptor + 401→redirect
 - `apps/web/src/lib/query-client.tsx`: React Query provider
 - Prisma schema with `User`, `Board`, `Lane` (with `isDefault`), `Card` models + initial migration SQL
@@ -1010,17 +1169,52 @@ Images embedded in Markdown are stored as base64 data URIs inline. Max image siz
 - Finalized Docker Compose, `.env.example`, README with setup instructions
 
 ### Milestone 6 — Tests ✅ COMPLETE
-- API integration tests: auth, board tenant isolation, cascade delete, card move validation
-- `lane.test.ts`: 14 tests — lane CRUD, default lane protection (403), reordering, cascade deletion of cards
-- `card.test.ts`: 15 tests — position ordering, no duplicate positions, cross-board move 403, cross-tenant 403, negative/float position 400
-- Non-happy-path coverage: wrong tenant, empty title, invalid UUID, reorder with empty array
-- `apps/api/.env.test` for isolated test database (port 5433)
+**API integration tests** (Vitest + Supertest, real Postgres):
+- `auth.test.ts`: 15 tests — bcrypt hash storage, 409 duplicate, 400 validation, 401 wrong creds, user enumeration prevention, httpOnly cookie, expired/malformed/wrong-secret tokens
+- `board.test.ts`: 16 tests — tenant isolation (private board 403 for other tenant), cascade delete, default lane protection, whitespace title validation
+- `lane.test.ts`: 14 tests — lane CRUD, default lane protection (403 on delete), reordering, cascade deletion of cards
+- `card.test.ts`: 15 tests — position ordering, no duplicate positions, cross-board move 403, cross-tenant 403, negative/float position 400, non-UUID 400
+- `apps/api/.env.test` for isolated test database
 
-### Milestone 7 — Stretch Goals (remaining time, in order)
-1. Real-time: Socket.io room per boardId, emit `card:moved`, `card:created` events
-2. Rich text: swap textarea for `@uiw/react-md-editor` in CardModal
-3. Dark mode: Tailwind `dark:` classes + settings panel Zustand store
-4. REST API docs: OpenAPI JSON via `zod-to-openapi`
+**Web unit/component tests** (Vitest + @testing-library/react + jsdom — 69 tests):
+- `auth.store.test.ts`: Zustand `setAuth` / `clearAuth`, token sync with `setAccessToken`
+- `board.store.test.ts`: `moveCard` optimistic, `snapshot()`, `rollback()` — same-lane + cross-lane
+- `auth.api.test.ts`: `registerUser`, `loginUser`, `logoutUser` — mocked `apiClient`, endpoint + payload assertions
+- `board.api.test.ts`: `fetchBoards`, `createBoard` (with `isPublic`), `updateBoard`, `reorderLanes`, `moveCard` — error propagation, 403 for cross-tenant
+- `login-form.test.tsx`: render, valid submit, empty fields, server error display, loading state
+- `register-form.test.tsx`: render, whitespace name blocked, password min-length, duplicate email server error
+- `create-board-modal.test.tsx`: render, valid submit (includes `onSuccess` callback), whitespace title blocked, cancel
+
+### Milestone 7 — Stretch Goals 🚀 IN PROGRESS
+
+#### 7.1 — Real-time Updates ✅ COMPLETE
+- `apps/api/src/socket.ts`: Socket.io singleton, `initSocket(httpServer)`, `emitBoardUpdate(boardId)`, `emitBoardsUpdate()`
+- `apps/api/src/index.ts`: switched from `app.listen()` to `http.createServer(app)` + `initSocket(httpServer)`
+- `apps/api/src/modules/card/board-id.helper.ts`: `getBoardIdForLane()`, `getBoardIdForCard()` — resolves board for socket emission
+- Card controller: emits `board:update` after create, update, delete, move
+- Lane controller: emits `board:update` after create, update, delete, reorder
+- Board controller: emits `boards:update` after create, update, delete
+- `apps/web/src/lib/socket.ts`: `getSocket()` singleton client
+- `apps/web/src/features/board/hooks/use-socket-board.ts`: per-board room join/leave, `board:update` → `invalidateQueries(['boards', boardId])`
+- `apps/web/src/features/board/hooks/use-socket-boards.ts`: `__boards__` room join/leave, `boards:update` → `invalidateQueries(['boards'])`
+- `board-page-client.tsx`: `useSocketBoard(boardId)` wired in
+- `board-list.tsx`: `useSocketBoards()` wired in
+
+#### 7.2 — Board Visibility + Author Display ✅ COMPLETE
+- Prisma: `isPublic Boolean @default(true)` on `Board`; all existing boards auto-set to public via migration `20260503000003_add_board_visibility`
+- Shared schemas: `isPublic` added to `createBoardSchema` (`.optional().default(true)`) and `updateBoardSchema` (`.optional()`)
+- Board service `listBoards`: returns `WHERE isPublic = true OR tenantId = <own>` + includes `owner { id, fullName, email }`
+- Board service `getBoard`: allows access if `isPublic = true` OR `tenantId` matches; returns 403 (not 404) for private cross-tenant
+- Board service `createBoard` / `updateBoard`: persist `isPublic`
+- `BoardSummary` type: gained `isPublic: boolean` and `owner: { id, fullName, email }`
+- `CreateBoardModal`: Public/Private two-button toggle (Globe / Lock icons), defaults to Public, helper text explains visibility
+- `BoardCard`: visibility badge (emerald `Globe · Public` or gray `Lock · Private`); rename button hidden for non-owners; meta row shows `Oct 15, 2025 · You` (or owner's name)
+- `BoardList`: `useSocketBoards()` enables real-time board list refresh across all logged-in users
+
+#### Remaining stretch goals (in order)
+3. Rich text: swap textarea for `@uiw/react-md-editor` in `CardModal`
+4. Dark mode: Tailwind `dark:` classes + settings panel Zustand store
+5. REST API docs: OpenAPI JSON via `zod-to-openapi`
 
 ---
 

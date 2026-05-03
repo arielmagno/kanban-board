@@ -25,9 +25,17 @@ export interface Board {
   lanes: Lane[];
 }
 
+export interface BoardOwner {
+  id: string;
+  fullName: string | null;
+  email: string;
+}
+
 export interface BoardSummary {
   id: string;
   title: string;
   color?: string | null;
+  isPublic: boolean;
   createdAt: string;
+  owner: BoardOwner;
 }

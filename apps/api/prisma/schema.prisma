@@ -21,6 +21,7 @@ model Board {
   id        String   @id @default(uuid())
   title     String
   color     String?
+  isPublic  Boolean  @default(true)
   tenantId  String
   ownerId   String
   owner     User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
@@ -28,6 +29,7 @@ model Board {
   createdAt DateTime @default(now())
 
   @@index([tenantId])
+  @@index([isPublic])
 }
 
 model Lane {

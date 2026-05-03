@@ -3,9 +3,10 @@
 import { useState, useRef } from 'react';
 import Link from 'next/link';
 import { useBoards, useUpdateBoard } from '../hooks/use-board';
+import { useSocketBoards } from '../hooks/use-socket-boards';
 import { CreateBoardModal } from './create-board-modal';
 import { useAuthStore } from '@/stores/auth.store';
-import { LayoutGrid, Plus, Clock, Pencil, Check, X } from 'lucide-react';
+import { LayoutGrid, Plus, Clock, Pencil, Check, X, Globe, Lock, User } from 'lucide-react';
 import type { BoardSummary } from '../board.types';
 
 function BoardSkeleton() {
@@ -17,11 +18,16 @@ function BoardSkeleton() {
   );
 }
 
-function BoardCard({ board }: { board: BoardSummary }) {
+function BoardCard({ board, currentUserId }: { board: BoardSummary; currentUserId: string | undefined }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(board.title);
   const inputRef = useRef<HTMLInputElement>(null);
   const updateBoard = useUpdateBoard(board.id);
+  const isOwner = board.owner.id === currentUserId;
+
+  const ownerLabel = isOwner
+    ? 'You'
+    : (board.owner.fullName?.trim() || board.owner.email);
 
   function startEdit(e: React.MouseEvent) {
     e.preventDefault();
@@ -96,20 +102,47 @@ function BoardCard({ board }: { board: BoardSummary }) {
               ${board.color ? 'bg-black/8' : 'bg-[#d6ede2] group-hover:bg-[#c5e5d5]'}`}>
               <LayoutGrid size={18} className="text-[#4a9e7f]" />
             </div>
-            <button
-              onClick={startEdit}
-              title="Rename board"
-              className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition"
-            >
-              <Pencil size={14} />
-            </button>
+            <div className="flex items-center gap-1">
+              {/* Visibility badge */}
+              {board.isPublic ? (
+                <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 text-[10px] font-medium">
+                  <Globe size={9} />
+                  Public
+                </span>
+              ) : (
+                <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 text-[10px] font-medium">
+                  <Lock size={9} />
+                  Private
+                </span>
+              )}
+              {/* Rename — owner only */}
+              {isOwner && (
+                <button
+                  onClick={startEdit}
+                  title="Rename board"
+                  className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition"
+                >
+                  <Pencil size={14} />
+                </button>
+              )}
+            </div>
           </div>
           <h3 className="font-semibold text-gray-900 text-sm line-clamp-2 mb-2 pr-2">
             {board.title}
           </h3>
-          <div className="flex items-center gap-1 text-xs text-gray-400" suppressHydrationWarning>
-            <Clock size={11} />
-            <span>{new Date(board.createdAt).toLocaleDateString()}</span>
+          {/* Meta: date + author */}
+          <div className="flex items-center gap-2 text-xs text-gray-400 flex-wrap" suppressHydrationWarning>
+            <span className="flex items-center gap-1">
+              <Clock size={11} />
+              {new Date(board.createdAt).toLocaleDateString(undefined, {
+                year: 'numeric', month: 'short', day: 'numeric',
+              })}
+            </span>
+            <span className="text-gray-200">·</span>
+            <span className="flex items-center gap-1">
+              <User size={11} />
+              {ownerLabel}
+            </span>
           </div>
         </div>
       </Link>
@@ -121,68 +154,69 @@ export function BoardList() {
   const { data: boards, isLoading, isError, refetch } = useBoards();
   const [showCreate, setShowCreate] = useState(false);
   const user = useAuthStore((s) => s.user);
+  useSocketBoards();
   const firstName = user?.fullName?.split(' ')[0] ?? null;
 
   return (
     <div className="flex-1 overflow-y-auto">
       <div className="p-8 max-w-4xl mx-auto">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">
-            {firstName ? `Welcome, ${firstName}! 👋` : 'My Boards'}
-          </h1>
-          <p className="text-sm text-gray-500 mt-1">Select a board to get started</p>
-        </div>
-        <button
-          onClick={() => setShowCreate(true)}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#f5c842] text-gray-900 font-semibold text-sm hover:bg-[#f0ba1a] active:scale-[0.98] transition"
-        >
-          <Plus size={16} />
-          New board
-        </button>
-      </div>
-
-      {isLoading && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {Array.from({ length: 3 }).map((_, i) => <BoardSkeleton key={i} />)}
-        </div>
-      )}
-
-      {isError && (
-        <div className="text-center py-16">
-          <p className="text-gray-500 mb-3">Failed to load boards.</p>
-          <button onClick={() => refetch()} className="text-sm text-[#4a9e7f] hover:underline">
-            Try again
-          </button>
-        </div>
-      )}
-
-      {!isLoading && !isError && boards?.length === 0 && (
-        <div className="text-center py-20">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[#d6ede2] mb-4">
-            <LayoutGrid size={28} className="text-[#4a9e7f]" />
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">
+              {firstName ? `Welcome, ${firstName}! 👋` : 'My Boards'}
+            </h1>
+            <p className="text-sm text-gray-500 mt-1">Select a board to get started</p>
           </div>
-          <p className="text-gray-600 font-medium mb-1">No boards yet</p>
-          <p className="text-sm text-gray-400 mb-6">Create your first board to get started</p>
           <button
             onClick={() => setShowCreate(true)}
-            className="px-5 py-2.5 rounded-xl bg-[#f5c842] text-gray-900 font-semibold text-sm hover:bg-[#f0ba1a] transition"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#f5c842] text-gray-900 font-semibold text-sm hover:bg-[#f0ba1a] active:scale-[0.98] transition"
           >
-            Create board
+            <Plus size={16} />
+            New board
           </button>
         </div>
-      )}
 
-      {!isLoading && !isError && boards && boards.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {boards.map((board) => (
-            <BoardCard key={board.id} board={board} />
-          ))}
-        </div>
-      )}
+        {isLoading && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {Array.from({ length: 3 }).map((_, i) => <BoardSkeleton key={i} />)}
+          </div>
+        )}
 
-      {showCreate && <CreateBoardModal onClose={() => setShowCreate(false)} />}
-    </div>
+        {isError && (
+          <div className="text-center py-16">
+            <p className="text-gray-500 mb-3">Failed to load boards.</p>
+            <button onClick={() => refetch()} className="text-sm text-[#4a9e7f] hover:underline">
+              Try again
+            </button>
+          </div>
+        )}
+
+        {!isLoading && !isError && boards?.length === 0 && (
+          <div className="text-center py-20">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[#d6ede2] mb-4">
+              <LayoutGrid size={28} className="text-[#4a9e7f]" />
+            </div>
+            <p className="text-gray-600 font-medium mb-1">No boards yet</p>
+            <p className="text-sm text-gray-400 mb-6">Create your first board to get started</p>
+            <button
+              onClick={() => setShowCreate(true)}
+              className="px-5 py-2.5 rounded-xl bg-[#f5c842] text-gray-900 font-semibold text-sm hover:bg-[#f0ba1a] transition"
+            >
+              Create board
+            </button>
+          </div>
+        )}
+
+        {!isLoading && !isError && boards && boards.length > 0 && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {boards.map((board) => (
+              <BoardCard key={board.id} board={board} currentUserId={user?.id} />
+            ))}
+          </div>
+        )}
+
+        {showCreate && <CreateBoardModal onClose={() => setShowCreate(false)} />}
+      </div>
     </div>
   );
 }

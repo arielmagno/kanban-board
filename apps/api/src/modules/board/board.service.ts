@@ -3,12 +3,16 @@ import { ForbiddenError, NotFoundError } from '../../errors';
 import type { CreateBoardDto, UpdateBoardDto } from '@boardflow/shared';
 import { randomUUID } from 'crypto';
 
+const OWNER_SELECT = { id: true, fullName: true, email: true } as const;
+
 const BOARD_SELECT = {
   id: true,
   title: true,
   color: true,
+  isPublic: true,
   tenantId: true,
   createdAt: true,
+  owner: { select: OWNER_SELECT },
   lanes: {
     select: {
       id: true,
@@ -32,10 +36,21 @@ const BOARD_SELECT = {
   },
 } as const;
 
+const SUMMARY_SELECT = {
+  id: true,
+  title: true,
+  color: true,
+  isPublic: true,
+  createdAt: true,
+  owner: { select: OWNER_SELECT },
+} as const;
+
 export async function listBoards(tenantId: string) {
   return prisma.board.findMany({
-    where: { tenantId },
-    select: { id: true, title: true, color: true, createdAt: true },
+    where: {
+      OR: [{ isPublic: true }, { tenantId }],
+    },
+    select: SUMMARY_SELECT,
     orderBy: { createdAt: 'desc' },
     take: 100,
   });
@@ -47,7 +62,7 @@ export async function getBoard(tenantId: string, boardId: string) {
     select: { ...BOARD_SELECT, ownerId: true },
   });
   if (!board) throw new NotFoundError('Board not found');
-  if (board.tenantId !== tenantId) throw new ForbiddenError();
+  if (!board.isPublic && board.tenantId !== tenantId) throw new ForbiddenError();
   return board;
 }
 
@@ -56,8 +71,15 @@ export async function createBoard(tenantId: string, ownerId: string, dto: Create
 
   return prisma.$transaction(async (tx) => {
     const board = await tx.board.create({
-      data: { id: boardId, title: dto.title, color: dto.color ?? null, tenantId, ownerId },
-      select: { id: true, title: true, color: true, createdAt: true },
+      data: {
+        id: boardId,
+        title: dto.title,
+        color: dto.color ?? null,
+        isPublic: dto.isPublic ?? true,
+        tenantId,
+        ownerId,
+      },
+      select: SUMMARY_SELECT,
     });
 
     await tx.lane.createMany({
@@ -82,8 +104,9 @@ export async function updateBoard(tenantId: string, boardId: string, dto: Update
     data: {
       ...(dto.title && { title: dto.title }),
       ...(dto.color !== undefined && { color: dto.color }),
+      ...(dto.isPublic !== undefined && { isPublic: dto.isPublic }),
     },
-    select: { id: true, title: true, color: true, createdAt: true },
+    select: SUMMARY_SELECT,
   });
 }
 

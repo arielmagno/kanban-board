@@ -81,3 +81,22 @@ body {
 .animate-slide-up {
   animation: slide-up 0.2s ease-out;
 }
+
+/* Toast slide-in from right */
+@keyframes toast-in {
+  from { transform: translateX(calc(100% + 1.5rem)); opacity: 0; }
+  to   { transform: translateX(0); opacity: 1; }
+}
+.animate-toast-in {
+  animation: toast-in 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Toast auto-dismiss progress bar */
+@keyframes toast-progress {
+  from { transform: scaleX(1); }
+  to   { transform: scaleX(0); }
+}
+.animate-toast-progress {
+  animation: toast-progress 5s linear forwards;
+  transform-origin: left;
+}

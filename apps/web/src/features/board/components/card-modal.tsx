@@ -40,7 +40,7 @@ export function CardModal({ boardId, laneId, editCard, onClose }: CardModalProps
         { onSuccess: onClose },
       );
     } else {
-      createCard.mutate(title, { onSuccess: onClose });
+      createCard.mutate({ title, description: description || undefined }, { onSuccess: onClose });
     }
   }
 
@@ -81,6 +81,15 @@ export function CardModal({ boardId, laneId, editCard, onClose }: CardModalProps
             rows={3}
             className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#4a9e7f] transition resize-none"
           />
+
+          {(createCard.isError || updateCard.isError) && (
+            <p className="text-xs text-rose-500 bg-rose-50 rounded-lg px-3 py-2">
+              {(createCard.error || updateCard.error) instanceof Error &&
+              (createCard.error || updateCard.error)?.message
+                ? (createCard.error ?? updateCard.error)?.message
+                : 'Failed to save — please try again.'}
+            </p>
+          )}
 
           <div className="flex gap-2 pt-1 justify-end">
             <button

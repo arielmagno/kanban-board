@@ -1,6 +1,7 @@
 import { ReactQueryProvider } from '@/lib/query-client';
 import { AppSidebar } from '@/features/board/components/app-sidebar';
 import { AuthProvider } from '@/features/auth/components/auth-provider';
+import { ToastContainer } from '@/components/toast';
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -12,6 +13,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             {children}
           </main>
         </div>
+        <ToastContainer />
       </AuthProvider>
     </ReactQueryProvider>
   );

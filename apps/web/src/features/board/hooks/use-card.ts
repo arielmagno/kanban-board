@@ -1,16 +1,24 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { boardKeys } from './use-board';
 import { useBoardStore } from '@/stores/board.store';
+import { useToastStore } from '@/stores/toast.store';
+import { getCardErrorMessage } from '@/lib/error-message';
 import { createCard, updateCard, deleteCard, moveCard } from '../card.api';
-import type { UpdateCardDto, MoveCardDto } from '@boardflow/shared';
+import type { CreateCardDto, UpdateCardDto, MoveCardDto } from '@boardflow/shared';
 import type { Board } from '../board.types';
+
+function addErrorToast(err: unknown, action: 'move' | 'create' | 'edit' | 'delete') {
+  const { title, message } = getCardErrorMessage(err, action);
+  useToastStore.getState().add({ type: 'error', title, message });
+}
 
 export function useCreateCard(boardId: string, laneId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (title: string) => createCard(laneId, { title }),
+    mutationFn: (dto: Omit<CreateCardDto, 'laneId'>) => createCard(laneId, dto),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: boardKeys.detail(boardId) }),
+    onError: (err) => addErrorToast(err, 'create'),
   });
 }
 
@@ -21,6 +29,7 @@ export function useUpdateCard(boardId: string) {
     mutationFn: ({ cardId, dto }: { cardId: string; dto: UpdateCardDto }) =>
       updateCard(cardId, dto),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: boardKeys.detail(boardId) }),
+    onError: (err) => addErrorToast(err, 'edit'),
   });
 }
 
@@ -30,6 +39,7 @@ export function useDeleteCard(boardId: string) {
   return useMutation({
     mutationFn: (cardId: string) => deleteCard(cardId),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: boardKeys.detail(boardId) }),
+    onError: (err) => addErrorToast(err, 'delete'),
   });
 }
 
@@ -39,14 +49,14 @@ export function useMoveCard(boardId: string) {
 
   return useMutation({
     mutationFn: (dto: MoveCardDto) => moveCard(dto),
-    // Capture board snapshot before mutation fires — used for rollback
     onMutate: () => snapshot(),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: boardKeys.detail(boardId) });
     },
-    onError: (_err, _dto, context) => {
+    onError: (err, _dto, context) => {
       rollback((context as Board | null) ?? null);
       queryClient.invalidateQueries({ queryKey: boardKeys.detail(boardId) });
+      addErrorToast(err, 'move');
     },
   });
 }
