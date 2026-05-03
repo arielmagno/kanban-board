@@ -6,7 +6,6 @@ import { X } from 'lucide-react';
 import { useCreateCard, useUpdateCard } from '../hooks/use-card';
 import { createCardSchema } from '@boardflow/shared';
 import type { Card } from '../board.types';
-import { useResolvedColorScheme } from '@/hooks/use-resolved-color-scheme';
 import '@uiw/react-md-editor/markdown-editor.css';
 import {
   bold,
@@ -35,7 +34,6 @@ interface CardModalProps {
 }
 
 export function CardModal({ boardId, laneId, editCard, onClose }: CardModalProps) {
-  const colorMode = useResolvedColorScheme();
   const [title, setTitle] = useState(editCard?.title ?? '');
   const [description, setDescription] = useState(editCard?.description ?? '');
   const [error, setError] = useState('');
@@ -98,7 +96,7 @@ export function CardModal({ boardId, laneId, editCard, onClose }: CardModalProps
             {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
           </div>
 
-          <div data-color-mode={colorMode} className="rounded-xl border border-bf-border overflow-hidden [&_.w-md-editor]:shadow-none [&_.w-md-editor]:!rounded-xl [&_.w-md-editor-toolbar]:!py-1.5 [&_.w-md-editor-toolbar]:!px-1 [&_.w-md-editor-toolbar_li_button]:!p-1.5">
+          <div data-color-mode="light" className="rounded-xl border border-bf-border overflow-hidden [&_.w-md-editor]:shadow-none [&_.w-md-editor]:!rounded-xl [&_.w-md-editor-toolbar]:!py-1.5 [&_.w-md-editor-toolbar]:!px-1 [&_.w-md-editor-toolbar_li_button]:!p-1.5">
             <MDEditor
               value={description}
               onChange={(val) => setDescription(val ?? '')}
@@ -114,7 +112,7 @@ export function CardModal({ boardId, laneId, editCard, onClose }: CardModalProps
           </div>
 
           {(createCard.isError || updateCard.isError) && (
-            <p className="text-xs text-rose-500 bg-rose-50 dark:bg-rose-950/40 dark:text-rose-300 rounded-lg px-3 py-2">
+            <p className="text-xs text-rose-600 bg-rose-50 rounded-lg px-3 py-2">
               {(createCard.error || updateCard.error) instanceof Error &&
               (createCard.error || updateCard.error)?.message
                 ? (createCard.error ?? updateCard.error)?.message

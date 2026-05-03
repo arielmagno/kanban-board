@@ -79,11 +79,11 @@ export function BoardHeader({
   }
 
   return (
-    <div className="flex items-center justify-between px-6 py-3 border-b border-bf-border bg-bf-surface/70 dark:bg-bf-surface/80 backdrop-blur-sm sticky top-0 z-20 flex-shrink-0 transition-colors duration-[var(--bf-motion-duration)]">
+    <div className="flex items-center justify-between px-6 py-3 border-b border-bf-border bg-white/80 backdrop-blur-sm sticky top-0 z-20 flex-shrink-0 transition-colors duration-[var(--bf-motion-duration)]">
       <div className="flex items-center gap-3 min-w-0">
         <Link
           href="/boards"
-          className="p-1.5 rounded-lg text-bf-muted hover:bg-black/10 dark:hover:bg-white/10 transition duration-[var(--bf-motion-duration)] flex-shrink-0"
+          className="p-1.5 rounded-lg text-bf-muted hover:bg-black/5 transition duration-[var(--bf-motion-duration)] flex-shrink-0"
         >
           <ChevronLeft size={18} />
         </Link>
@@ -103,7 +103,7 @@ export function BoardHeader({
               <Check size={15} />
             </button>
             <button onMouseDown={(e) => { e.preventDefault(); cancel(); }}
-              className="p-1 rounded-lg text-gray-400 hover:bg-black/10 dark:hover:bg-white/10 transition flex-shrink-0">
+              className="p-1 rounded-lg text-gray-400 hover:bg-black/5 transition flex-shrink-0">
               <X size={15} />
             </button>
           </div>
@@ -126,7 +126,7 @@ export function BoardHeader({
               setShowColors((s) => !s);
             }}
             title="Board background color"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm text-bf-text hover:bg-black/10 dark:hover:bg-white/10 transition duration-[var(--bf-motion-duration)]"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm text-bf-text hover:bg-black/5 transition duration-[var(--bf-motion-duration)]"
           >
           <Palette size={15} />
           <span className="hidden sm:inline text-xs font-medium">Background</span>

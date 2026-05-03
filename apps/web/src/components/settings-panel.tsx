@@ -38,7 +38,7 @@ function Segmented<T extends string>({
   onChange: (id: T) => void;
 }) {
   return (
-    <div className="flex rounded-xl border border-sidebar-border p-0.5 bg-white/45 dark:bg-black/22 backdrop-blur-sm">
+    <div className="flex rounded-xl border border-sidebar-border p-0.5 bg-white/70 backdrop-blur-sm">
       {options.map((o) => (
         <button
           key={o.id}
@@ -73,7 +73,7 @@ export function SettingsPanel({ open, onClose }: { open: boolean; onClose: () =>
   return (
     <>
       <div
-        className="fixed inset-0 bg-black/40 z-50 md:bg-transparent md:pointer-events-none dark:bg-black/55"
+        className="fixed inset-0 bg-black/40 z-50 md:bg-transparent md:pointer-events-none"
         aria-hidden
         onMouseDown={(e) => {
           if (e.target === e.currentTarget) onClose();
@@ -93,7 +93,7 @@ export function SettingsPanel({ open, onClose }: { open: boolean; onClose: () =>
           <button
             type="button"
             onClick={onClose}
-            className="p-2 rounded-xl text-sidebar-fg-muted hover:bg-black/8 dark:hover:bg-white/10 transition-colors duration-[var(--bf-motion-duration)]"
+            className="p-2 rounded-xl text-sidebar-fg-muted hover:bg-black/10 transition-colors duration-[var(--bf-motion-duration)]"
             aria-label="Close settings"
           >
             <X size={20} />
@@ -117,8 +117,8 @@ export function SettingsPanel({ open, onClose }: { open: boolean; onClose: () =>
                   onClick={() => setCardSize(c.id)}
                   className={`w-full text-left rounded-xl border px-3 py-2.5 transition-colors duration-[var(--bf-motion-duration)] ${
                     cardSize === c.id
-                      ? 'border-brand bg-white/55 dark:bg-black/25 shadow-sm'
-                      : 'border-sidebar-border hover:bg-black/6 dark:hover:bg-white/8'
+                      ? 'border-brand bg-white shadow-sm'
+                      : 'border-sidebar-border hover:bg-black/6'
                   }`}
                 >
                   <span className="font-medium text-sidebar-fg text-sm">{c.label}</span>
@@ -138,8 +138,8 @@ export function SettingsPanel({ open, onClose }: { open: boolean; onClose: () =>
                   onClick={() => setBoardDensity(d.id)}
                   className={`w-full text-left rounded-xl border px-3 py-2.5 transition-colors duration-[var(--bf-motion-duration)] ${
                     boardDensity === d.id
-                      ? 'border-brand bg-white/55 dark:bg-black/25 shadow-sm'
-                      : 'border-sidebar-border hover:bg-black/6 dark:hover:bg-white/8'
+                      ? 'border-brand bg-white shadow-sm'
+                      : 'border-sidebar-border hover:bg-black/6'
                   }`}
                 >
                   <span className="font-medium text-sidebar-fg text-sm">{d.label}</span>

@@ -5,7 +5,6 @@ import { CSS } from '@dnd-kit/utilities';
 import { Pencil, Trash2 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import type { Card } from '../board.types';
-import { useResolvedColorScheme } from '@/hooks/use-resolved-color-scheme';
 
 const MDPreview = dynamic(() => import('@uiw/react-md-editor').then((m) => m.default.Markdown), {
   ssr: false,
@@ -20,7 +19,6 @@ interface CardItemProps {
 }
 
 export function CardItem({ card, onEdit, onDelete, onClick, isReadOnly = false }: CardItemProps) {
-  const colorMode = useResolvedColorScheme();
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: card.id,
     data: { type: 'card', card },
@@ -63,7 +61,7 @@ export function CardItem({ card, onEdit, onDelete, onClick, isReadOnly = false }
             <button
               onPointerDown={(e) => e.stopPropagation()}
               onClick={(e) => { e.stopPropagation(); onDelete(card.id); }}
-              className="p-1 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-bf-muted hover:text-red-500 transition duration-[var(--bf-motion-duration)]"
+              className="p-1 rounded-lg hover:bg-red-50 text-bf-muted hover:text-red-500 transition duration-[var(--bf-motion-duration)]"
             >
               <Trash2 size={13} />
             </button>
@@ -72,7 +70,7 @@ export function CardItem({ card, onEdit, onDelete, onClick, isReadOnly = false }
       </div>
       {card.description && (
         <div
-          data-color-mode={colorMode}
+          data-color-mode="light"
           className="mt-1.5 text-muted line-clamp-3 [&_p]:leading-snug [&_*]:text-[length:var(--bf-card-desc-size)] [&_*]:text-muted"
         >
           <MDPreview source={card.description} />

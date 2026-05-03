@@ -21,7 +21,7 @@ todos:
     content: "Milestone 6: API integration tests (Vitest + Supertest), non-happy-path coverage"
     status: completed
   - id: m7-stretch
-    content: "Milestone 7: Stretch — Socket.io, visibility/owner, rich text, card detail, read-only visitors, lane reorder + colors, settings/dark mode (OpenAPI deferred)"
+    content: "Milestone 7: Stretch — Socket.io, visibility/owner, rich text, card detail, read-only visitors, lane reorder + colors, settings (layout prefs) (OpenAPI deferred)"
     status: completed
 isProject: false
 ---
@@ -1217,13 +1217,13 @@ Images embedded in Markdown are stored as base64 data URIs inline. Max image siz
 - `card-modal.tsx`: `MDEditor` with a **minimal** command set (bold, strikethrough, blockquote, bullets, image); `preview="edit"`; `markdown-editor.css`; width `max-w-2xl`
 - `card-item.tsx`: `MDPreview` for truncated description; click opens read-only **card detail** modal
 - `card-detail-modal.tsx`: title, created date, author (board owner), full Markdown body — Trello-style detail view
-- `useResolvedColorScheme()` + `data-color-mode` so previews track the **OS** light/dark preference
+- `data-color-mode="light"` on Markdown wrappers so `@uiw/react-md-editor` uses light styling
 
-#### 7.4 — Dark Mode & Settings Panel ✅ COMPLETE
-- `stores/ui-preferences.store.ts`: Zustand `persist` → `localStorage` (`animationSpeed`, `cardSize`, `boardDensity` only; storage key `boardflow-ui-prefs`)
-- `components/ui-preferences-bridge.tsx`: toggles `dark` on `<html>` from **`prefers-color-scheme` only**; sets `--bf-*` CSS variables (motion, lane width, gaps, card padding)
-- `components/settings-panel.tsx`: sidebar-colored drawer; **no** manual theme toggle — layout prefs only
-- `globals.css`: `@custom-variant dark`, semantic `--color-bf-*` tokens, dark scrollbar + lane token overrides
+#### 7.4 — Settings Panel & layout preferences ✅ COMPLETE
+- `stores/ui-preferences.store.ts`: Zustand `persist` → `localStorage` (`animationSpeed`, `cardSize`, `boardDensity`; storage key `boardflow-ui-prefs`)
+- `components/ui-preferences-bridge.tsx`: applies `--bf-*` CSS variables on `<html>` (motion, lane width, gaps, card padding) — **no** theme or `dark` class
+- `components/settings-panel.tsx`: sidebar-colored drawer; layout prefs only
+- `globals.css`: light-only design tokens (lanes, sidebar, surfaces)
 
 #### 7.5 — Board UX, DnD & Multi-User Polish ✅ COMPLETE
 - **Non-owner read-only**: `BoardClient` / `LaneColumn` / `CardItem` / `BoardHeader` — no lane reorder, no card drag, no add/edit/delete/rename board; subtle lock affordance on lanes; `DndContext` keeps stable `sensors` array to satisfy React effect rules; handlers gate on `isOwnerRef`
@@ -1245,5 +1245,5 @@ Before starting, clarify these with the proctor:
 1. **GitHub repo visibility**: Must it be public from the start, or can you make it public on submission?
 2. **Test database in Docker**: Is a separate `db-test` service in Docker Compose acceptable for test isolation, or should tests use mocks?
 3. **"No paid APIs"**: Does this include any cloud-hosted services (e.g. Vercel free tier), or is it strictly no API keys?
-4. **Stretch goal priority**: If you run out of time, is partial stretch goal implementation (e.g. dark mode only, no real-time) acceptable?
+4. **Stretch goal priority**: If you run out of time, is partial stretch goal implementation (e.g. settings only, no real-time) acceptable?
 5. **Browser support**: Any specific browser requirements, or modern browsers only?

@@ -9,7 +9,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     <ReactQueryProvider>
       <AuthProvider>
         <UiPreferencesBridge />
-        <div className="flex h-screen bg-app-bg">
+        <div className="flex h-screen bg-[#f4f6f8]">
           <AppSidebar />
           <main className="flex-1 md:ml-16 flex flex-col overflow-hidden">
             {children}

@@ -37,7 +37,7 @@ export function LaneColumn({ lane, index, boardId, boardColor, isOver, isOwner, 
     : Math.abs(lane.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)) % LANE_COLORS.length;
   const color = LANE_COLORS[colorIndex];
   // When the board has a custom background, use white translucent lanes for contrast
-  const laneBg = boardColor ? 'bg-white/75 dark:bg-card-bg/85 backdrop-blur-sm' : color.bg;
+  const laneBg = boardColor ? 'bg-white/75 backdrop-blur-sm' : color.bg;
   const [menuOpen, setMenuOpen] = useState(false);
   const [renaming, setRenaming] = useState(false);
   const [newTitle, setNewTitle] = useState(lane.title);
@@ -118,7 +118,7 @@ export function LaneColumn({ lane, index, boardId, boardColor, isOver, isOwner, 
           <div className="relative" ref={laneMenuRef}>
             <button
               onClick={() => setMenuOpen((o) => !o)}
-              className="p-1 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition duration-[var(--bf-motion-duration)] text-bf-muted"
+              className="p-1 rounded-lg hover:bg-black/5 transition duration-[var(--bf-motion-duration)] text-bf-muted"
             >
               <MoreHorizontal size={16} />
             </button>
@@ -133,7 +133,7 @@ export function LaneColumn({ lane, index, boardId, boardColor, isOver, isOwner, 
               {!lane.isDefault && (
                 <button
                   onClick={() => { deleteLane.mutate(lane.id); setMenuOpen(false); }}
-                  className="flex items-center gap-2 w-full px-3 py-2 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
+                  className="flex items-center gap-2 w-full px-3 py-2 text-sm text-red-500 hover:bg-red-50"
                 >
                   <Trash2 size={14} /> Delete lane
                 </button>
@@ -170,7 +170,7 @@ export function LaneColumn({ lane, index, boardId, boardColor, isOver, isOwner, 
       {isOwner && (
         <button
           onClick={() => onAddCard(lane.id)}
-          className="flex items-center gap-1.5 mt-2 px-2 py-2 rounded-xl text-sm text-bf-muted hover:bg-black/5 dark:hover:bg-white/10 transition w-full duration-[var(--bf-motion-duration)]"
+          className="flex items-center gap-1.5 mt-2 px-2 py-2 rounded-xl text-sm text-bf-muted hover:bg-black/5 transition w-full duration-[var(--bf-motion-duration)]"
         >
           <Plus size={15} /> Add task
         </button>

@@ -3,7 +3,6 @@
 import { X, Calendar, AlignLeft } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import type { Card, BoardOwner } from '../board.types';
-import { useResolvedColorScheme } from '@/hooks/use-resolved-color-scheme';
 
 const MDPreview = dynamic(() => import('@uiw/react-md-editor').then((m) => m.default.Markdown), {
   ssr: false,
@@ -16,7 +15,6 @@ interface CardDetailModalProps {
 }
 
 export function CardDetailModal({ card, author, onClose }: CardDetailModalProps) {
-  const colorMode = useResolvedColorScheme();
   const formattedDate = new Date(card.createdAt).toLocaleDateString(undefined, {
     year: 'numeric',
     month: 'short',
@@ -66,7 +64,7 @@ export function CardDetailModal({ card, author, onClose }: CardDetailModalProps)
                 Description
               </div>
               <div
-                data-color-mode={colorMode}
+                data-color-mode="light"
                 className="text-sm text-heading leading-relaxed [&_p]:mb-3 [&_ul]:mb-3 [&_ol]:mb-3 [&_li]:mb-1 [&_img]:rounded-xl [&_img]:border [&_img]:border-bf-border"
               >
                 <MDPreview source={card.description} />

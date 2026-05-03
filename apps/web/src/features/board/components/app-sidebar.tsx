@@ -41,7 +41,7 @@ export function AppSidebar() {
               className={`flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-[var(--bf-motion-duration)] ${
                 active
                   ? 'bg-sidebar-active text-gray-900'
-                  : 'text-[#4a9e7f] hover:bg-[#c5e5d5] dark:text-[#7bc4a8] dark:hover:bg-white/10'
+                  : 'text-[#4a9e7f] hover:bg-[#c5e5d5]'
               }`}
             >
               <Icon size={20} />
@@ -54,7 +54,7 @@ export function AppSidebar() {
             type="button"
             title="Settings"
             onClick={() => setSettingsOpen(true)}
-            className="flex items-center justify-center w-10 h-10 rounded-xl text-[#4a9e7f] hover:bg-[#c5e5d5] dark:text-[#7bc4a8] dark:hover:bg-white/10 transition duration-[var(--bf-motion-duration)]"
+            className="flex items-center justify-center w-10 h-10 rounded-xl text-[#4a9e7f] hover:bg-[#c5e5d5] transition duration-[var(--bf-motion-duration)]"
           >
             <Settings size={20} />
           </button>
@@ -62,7 +62,7 @@ export function AppSidebar() {
             title="Log out"
             onClick={() => logout.mutate()}
             disabled={logout.isPending}
-            className="flex items-center justify-center w-10 h-10 rounded-xl text-[#4a9e7f] hover:bg-red-100 hover:text-red-500 dark:text-[#7bc4a8] dark:hover:bg-red-900/30 dark:hover:text-red-400 transition disabled:opacity-50 duration-[var(--bf-motion-duration)]"
+            className="flex items-center justify-center w-10 h-10 rounded-xl text-[#4a9e7f] hover:bg-red-100 hover:text-red-500 transition disabled:opacity-50 duration-[var(--bf-motion-duration)]"
           >
             <LogOut size={20} />
           </button>
